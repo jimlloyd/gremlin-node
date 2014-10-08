@@ -2,6 +2,9 @@
 
 default: package lint test
 
+clean:
+	mvn clean
+
 package:
 	mvn clean package
 

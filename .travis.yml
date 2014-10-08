@@ -1,7 +1,6 @@
 language: java
 jdk:
   - oraclejdk8
-  - oraclejdk7
 env:
   - NODE_VERSION="0.11"
   - NODE_VERSION="0.10"

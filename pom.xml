@@ -10,43 +10,25 @@
   <name>gremlin</name>
 
   <properties>
-    <blueprints.version>2.5.0</blueprints.version>
-    <gremlin.version>2.5.0</gremlin.version>
-    <pipes.version>2.5.0</pipes.version>
-    <rexster.version>2.5.0</rexster.version>
+    <gremlin.version>3.0.0.M4</gremlin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.tinkerpop.gremlin</groupId>
-      <artifactId>gremlin-java</artifactId>
+      <groupId>com.tinkerpop</groupId>
+      <artifactId>gremlin-core</artifactId>
       <version>${gremlin.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.tinkerpop.gremlin</groupId>
+      <groupId>com.tinkerpop</groupId>
       <artifactId>gremlin-groovy</artifactId>
-      <version>${blueprints.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.tinkerpop.rexster</groupId>
-      <artifactId>rexster-server</artifactId>
-      <version>${rexster.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.tinkerpop.blueprints</groupId>
-      <artifactId>blueprints-core</artifactId>
-      <version>${blueprints.version}</version>
+      <version>${gremlin.version}</version>
     </dependency>
     <dependency>
       <groupId>com.tinkerpop</groupId>
-      <artifactId>pipes</artifactId>
-      <version>${pipes.version}</version>
+      <artifactId>tinkergraph-gremlin</artifactId>
+      <version>${gremlin.version}</version>
     </dependency>
   </dependencies>
 
