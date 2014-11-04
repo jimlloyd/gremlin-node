@@ -88,9 +88,9 @@ suite('pipeline-wrapper', function () {
       assert.ifError(err);
       assert.ok(v instanceof VertexWrapper);
 
-      gremlin.toJsObj(v, function (err, jsonObj) {
+      gremlin.toJSON(v, function (err, jsonObj) {
         assert.ifError(err);
-        // console.log(require('util').inspect(jsonObj, {depth: null}));
+//         console.log(require('util').inspect(jsonObj, {depth: null}));
         var expected = {
           id: 1,
           label: 'vertex',
@@ -101,11 +101,66 @@ suite('pipeline-wrapper', function () {
             age: [ { id: 1, label: 'age', value: 29 } ]
           }
         };
-
         assert.deepEqual(jsonObj, expected);
         done();
       });
     });
+  });
+
+  test('V().has("lang").toJSON', function (done) {
+    g.V().has('lang').toJSON(function (err, jsonObj) {
+      assert.ifError(err);
+//       console.log(require('util').inspect(jsonObj, {depth: null}));
+      var expected = [
+        {
+          id: 3,
+          label: 'vertex',
+          type: 'vertex',
+          properties: {
+            name: [ { id: 4, label: 'name', value: 'lop' } ],
+            lang: [ { id: 5, label: 'lang', value: 'java' } ]
+          }
+        },
+        {
+          id: 5,
+          label: 'vertex',
+          type: 'vertex',
+          properties: {
+            name: [ { id: 8, label: 'name', value: 'ripple' } ],
+            lang: [ { id: 9, label: 'lang', value: 'java' } ]
+          }
+        }
+      ];
+      assert.deepEqual(jsonObj, expected);
+      done();
+    });
+  });
+
+  test('V().has("lang").toJSONSync', function (done) {
+    var jsonObj = g.V().has('lang').toJSONSync();
+//       console.log(require('util').inspect(jsonObj, {depth: null}));
+    var expected = [
+      {
+        id: 3,
+        label: 'vertex',
+        type: 'vertex',
+        properties: {
+          name: [ { id: 4, label: 'name', value: 'lop' } ],
+          lang: [ { id: 5, label: 'lang', value: 'java' } ]
+        }
+      },
+      {
+        id: 5,
+        label: 'vertex',
+        type: 'vertex',
+        properties: {
+          name: [ { id: 8, label: 'name', value: 'ripple' } ],
+          lang: [ { id: 9, label: 'lang', value: 'java' } ]
+        }
+      }
+    ];
+    assert.deepEqual(jsonObj, expected);
+    done();
   });
 
   test('V().has(key, value)', function (done) {
@@ -150,14 +205,14 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  test('g.V().toArray() -> toJsObj()', function (done) {
+  test('g.V().toArray() -> toJSON()', function (done) {
     var traversal = g.V();
     assert.ok(traversal instanceof PipelineWrapper);
 
     traversal.toArray(function (err, arr) {
       assert.ifError(err);
 
-      gremlin.toJsObj(arr, function (err, verts) {
+      gremlin.toJSON(arr, function (err, verts) {
         // console.log(require('util').inspect(verts, {depth: null}));
         var expected = [
           { id: 1,
@@ -235,12 +290,12 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  test('g.E().toArray() -> toJsObj', function (done) {
+  test('g.E().toArray() -> toJSON', function (done) {
     var traversal = g.E();
     assert.ok(traversal instanceof PipelineWrapper);
 
     traversal.toArray()
-      .then(gremlin.toJsObj.bind(gremlin), assert.ifError)
+      .then(gremlin.toJSON.bind(gremlin), assert.ifError)
       .then(function (edges) {
         assert.ok(_.isArray(edges));
         // console.log(require('util').inspect(edges, {depth: null}));
@@ -301,7 +356,7 @@ suite('pipeline-wrapper', function () {
 
   test('g.E().has(key, val)', function (done) {
     g.E().has(gremlin.T.id, 7).toArray()
-      .then(function (arr) { return gremlin.toJsObj(arr); }, assert.ifError)
+      .then(function (arr) { return gremlin.toJSON(arr); }, assert.ifError)
       .then(function (edges) {
         assert.strictEqual(edges.length, 1);
         // console.log(require('util').inspect(edges, {depth: null}));
@@ -595,7 +650,7 @@ suite('pipeline-wrapper', function () {
       assert.strictEqual(recs.length, 1);
       var v = recs[0];
       assert.ok(v instanceof VertexWrapper);
-      gremlin.toJsObj(v, function (err, jsonObj) {
+      gremlin.toJSON(v, function (err, jsonObj) {
         var expected = {
           id: 3,
           label: 'vertex',

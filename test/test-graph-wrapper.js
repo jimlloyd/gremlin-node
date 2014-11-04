@@ -192,7 +192,6 @@ suite('graph-wrapper', function () {
       assert.strictEqual(e.getLabel(), 'knows');
       e.value('weight')
         .then(function (weight) {
-          console.log('Edge(7) weight is:', weight);
           assert(weight > 0.0 && weight < 1.0);
         }, assert.ifError)
         .done(done);
