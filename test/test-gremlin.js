@@ -1,6 +1,6 @@
 'use strict';
 
-var _ = require('underscore');
+var _ = require('lodash');
 var assert = require('assert');
 var sinon = require('sinon');
 var Gremlin = require('../lib/gremlin');
@@ -16,41 +16,35 @@ suite('gremlin', function () {
   });
 
   setup(function () {
-    var TinkerGraphFactory = gremlin.java.import('com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory');
-    graph = TinkerGraphFactory.createTinkerGraphSync();
+    var TinkerGraphFactory = gremlin.java.import('com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory');
+    graph = TinkerGraphFactory.createClassicSync();
     g = new GraphWrapper(gremlin, graph);
   });
 
-  test('Wrapped objects can be converted to JS objects using gremlin.toJSON', function (done) {
-    g.v('2', function (err, res) {
-      gremlin.toJSON(res, function (err, json) {
+  test('Wrapped objects can be converted to JS objects using gremlin.toJsObj', function (done) {
+    g.v(2, function (err, res) {
+      assert.ifError(err);
+      gremlin.toJsObj(res, function (err, json) {
         assert.ifError(err);
-        assert.strictEqual(json[0]._id, '2');
+        // console.log(require('util').inspect(json, {depth: null}));
+        assert(json.id === 2);
         done();
       });
     });
   });
 
-  test('Unwrapped objects can be converted to JS objects using gremlin.toJSON', function (done) {
-    g.getVertex('2', function (err, res) {
-      gremlin.toJSON(res.el, function (err, json) {
-        assert.ifError(err);
-        assert.strictEqual(json[0]._id, '2');
-        done();
-      });
-    });
-  });
-
-  test('gremlin.toJSON throws error but does not crash when passed null', function (done) {
-    gremlin.toJSON(null, function (err, json) {
-      assert(err);
+  test('gremlin.toJsObj returns null when passed null', function (done) {
+    gremlin.toJsObj(null, function (err, json) {
+      assert.ifError(err);
+      assert.strictEqual(json, null);
       done();
     });
   });
 
   test('gremlin.toJSON throws error but does not crash when passed undefined', function (done) {
-    gremlin.toJSON(undefined, function (err, json) {
-      assert(err);
+    gremlin.toJsObj(undefined, function (err, json) {
+      assert.ifError(err);
+      assert.strictEqual(json, undefined);
       done();
     });
   });
