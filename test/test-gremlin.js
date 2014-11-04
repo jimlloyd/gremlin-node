@@ -21,10 +21,10 @@ suite('gremlin', function () {
     g = new GraphWrapper(gremlin, graph);
   });
 
-  test('Wrapped objects can be converted to JS objects using gremlin.toJsObj', function (done) {
+  test('Wrapped objects can be converted to JS objects using gremlin.toJSON', function (done) {
     g.v(2, function (err, res) {
       assert.ifError(err);
-      gremlin.toJsObj(res, function (err, json) {
+      gremlin.toJSON(res, function (err, json) {
         assert.ifError(err);
         // console.log(require('util').inspect(json, {depth: null}));
         assert(json.id === 2);
@@ -33,16 +33,25 @@ suite('gremlin', function () {
     });
   });
 
-  test('gremlin.toJsObj returns null when passed null', function (done) {
-    gremlin.toJsObj(null, function (err, json) {
+  test('Wrapped objects can be converted to JS objects using gremlin.toJSONSync', function (done) {
+    g.v(2, function (err, res) {
+      assert.ifError(err);
+      var json = gremlin.toJSONSync(res);
+      assert(json.id === 2);
+      done();
+    });
+  });
+
+  test('gremlin.toJSON returns null when passed null', function (done) {
+    gremlin.toJSON(null, function (err, json) {
       assert.ifError(err);
       assert.strictEqual(json, null);
       done();
     });
   });
 
-  test('gremlin.toJSON throws error but does not crash when passed undefined', function (done) {
-    gremlin.toJsObj(undefined, function (err, json) {
+  test('gremlin.toJSON returns undefined when passed undefined', function (done) {
+    gremlin.toJSON(undefined, function (err, json) {
       assert.ifError(err);
       assert.strictEqual(json, undefined);
       done();
