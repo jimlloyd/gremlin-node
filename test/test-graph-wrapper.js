@@ -103,7 +103,7 @@ suite('graph-wrapper', function () {
           assert.ifError(err);
           assert(v instanceof VertexWrapper);
           assert.strictEqual(v.toStringSync(), 'v[12]');
-          v.getProperty('name', function (err, name) {
+          v.value('name', function (err, name) {
             assert.ifError(err);
             assert.strictEqual(name, 'jim');
           });
@@ -116,7 +116,7 @@ suite('graph-wrapper', function () {
     g.addVertex({name: 'jim'})
       .then(function (v) { return v.getId(); }, assert.ifError)
       .then(function (id) { return g.getVertex(id); }, assert.ifError)
-      .then(function (v) { return v.getProperty('name'); }, assert.ifError)
+      .then(function (v) { return v.value('name'); }, assert.ifError)
       .then(function (name) {
         assert.strictEqual(name, 'jim');
       }, assert.ifError)
@@ -190,7 +190,7 @@ suite('graph-wrapper', function () {
       assert.strictEqual(e.getId(), 7);
       assert.strictEqual(e.toStringSync(), 'e[7][1-knows->2]');
       assert.strictEqual(e.getLabel(), 'knows');
-      e.getProperty('weight')
+      e.value('weight')
         .then(function (weight) {
           console.log('Edge(7) weight is:', weight);
           assert(weight > 0.0 && weight < 1.0);
@@ -237,13 +237,13 @@ suite('graph-wrapper', function () {
       .done(done);
   });
 
-  test('setProperty(key, value) / getProperty(key) using callback API', function (done) {
+  test('setProperty(key, value) / value(key) using callback API', function (done) {
     g.getVertex(1, function (err, v) {
       assert.ifError(err);
       assert(v instanceof VertexWrapper);
       v.setProperty('fruit', 'lemon', function (err) {
         assert.ifError(err);
-        v.getProperty('fruit', function (err, name) {
+        v.value('fruit', function (err, name) {
           assert.ifError(err);
           assert.strictEqual(name, 'lemon');
           done();
@@ -252,26 +252,26 @@ suite('graph-wrapper', function () {
     });
   });
 
-  test('setProperty(key, value) / getProperty(key) using promise API', function (done) {
+  test('setProperty(key, value) / value(key) using promise API', function (done) {
     var v;
     g.getVertex(1)
       .then(function (_v) { v = _v; assert(v instanceof VertexWrapper); return v; }, assert.ifError)
-      .then(function () { return v.getProperty('name'); }, assert.ifError)
+      .then(function () { return v.value('name'); }, assert.ifError)
       .then(function (name) { assert.strictEqual(name, 'marko'); return v; }, assert.ifError)
       .then(function () { return v.setProperty('name', 'john'); }, assert.ifError)
-      .then(function () { return v.getProperty('name'); }, assert.ifError)
+      .then(function () { return v.value('name'); }, assert.ifError)
       .then(function (name) { assert.strictEqual(name, 'john'); }, assert.ifError)
       .done(done);
   });
 
-  test('setProperties(props) / getProperties(props) using callback API', function (done) {
+  test('setProperties(props) / values(props) using callback API', function (done) {
     g.getVertex(1, function (err, v) {
       assert.ifError(err);
       assert(v instanceof VertexWrapper);
       var expectedProps = { 'name': 'josh', 'age': 45, 'foo': 23, 'bar': 42, 'xxx': 'yyy' };
       v.setProperties(expectedProps, function (err) {
         assert.ifError(err);
-        v.getProperties(Object.keys(expectedProps), function (err, props) {
+        v.values(Object.keys(expectedProps), function (err, props) {
           assert.ifError(err);
           assert.deepEqual(props, expectedProps);
           done();
@@ -280,13 +280,13 @@ suite('graph-wrapper', function () {
     });
   });
 
-  test('setProperties(props) / getProperties(props) using promise API', function (done) {
+  test('setProperties(props) / values(props) using promise API', function (done) {
     g.getVertex(1, function (err, v) {
       assert.ifError(err);
       assert(v instanceof VertexWrapper);
       var expectedProps = { 'name': 'josh', 'age': 45, 'foo': 23, 'bar': 42, 'xxx': 'yyy' };
       v.setProperties(expectedProps)
-        .then(function () { return v.getProperties(Object.keys(expectedProps)); }, assert.ifError)
+        .then(function () { return v.values(Object.keys(expectedProps)); }, assert.ifError)
         .then(function (props) { assert.deepEqual(props, expectedProps); }, assert.ifError)
         .done(done);
     });
@@ -298,7 +298,7 @@ suite('graph-wrapper', function () {
       assert(v instanceof VertexWrapper);
       v.removeProperty('name', function (err, res) {
         assert.ifError(err);
-        v.getProperty('name', function (err, name) {
+        v.value('name', function (err, name) {
           assert.ifError(err);
           assert.strictEqual(name, undefined);
           done();
@@ -312,7 +312,7 @@ suite('graph-wrapper', function () {
     g.getVertex(1)
       .then(function (_v) { v = _v; assert(v instanceof VertexWrapper); return v; }, assert.ifError)
       .then(function () { return v.removeProperty('name'); }, assert.ifError)
-      .then(function () { return v.getProperty('name'); }, assert.ifError)
+      .then(function () { return v.value('name'); }, assert.ifError)
       .then(function (name) { assert.strictEqual(name, undefined); }, assert.ifError)
       .done(done);
   });
@@ -323,7 +323,7 @@ suite('graph-wrapper', function () {
       assert(v instanceof VertexWrapper);
       v.removeProperties(['name', 'age'], function (err) {
         assert.ifError(err);
-        v.getProperties(['name', 'age'], function (err, props) {
+        v.values(['name', 'age'], function (err, props) {
           assert.ifError(err);
           assert.deepEqual(props, {name: undefined, age: undefined});
           done();
@@ -336,10 +336,10 @@ suite('graph-wrapper', function () {
     var v;
     g.getVertex(1)
       .then(function (_v) { v = _v; assert(v instanceof VertexWrapper); return v; }, assert.ifError)
-      .then(function () { return v.getProperties(['name', 'age']); }, assert.ifError)
+      .then(function () { return v.values(['name', 'age']); }, assert.ifError)
       .then(function (props) { assert.deepEqual(props, {name: 'marko', age: 29}); }, assert.ifError)
       .then(function () { return v.removeProperties(['name', 'age']); }, assert.ifError)
-      .then(function () { return v.getProperties(['name', 'age']); }, assert.ifError)
+      .then(function () { return v.values(['name', 'age']); }, assert.ifError)
       .then(function (props) { assert.deepEqual(props, {name: undefined, age: undefined}); }, assert.ifError)
       .done(done);
   });

@@ -1,11 +1,13 @@
-gremlin-node
+gremlin-v3
 ============
 
-[![Build Status](https://travis-ci.org/inolen/gremlin-node.svg)](https://travis-ci.org/inolen/gremlin-node)
+[![Build Status](https://travis-ci.org/jimlloyd/gremlin-v3.svg)](https://travis-ci.org/jimlloyd/gremlin-v3)
 
-Implementation of [Gremlin](https://github.com/tinkerpop/gremlin/wiki) for node.js. Gremlin-node is a javascript wrapper around the Gremlin API. The node-java module provides the bridge between node and Java.
+Implementation of [Gremlin/TinkerPop3](https://github.com/tinkerpop/tinkerpop3) for node.js. Gremlin-v3 is a javascript wrapper around the TinkerPop3 API. The node-java module provides the bridge between node and Java.
 
-NOTE: This package is compatible with TinkerPop V2. TinkerPop V3 is a significant change and is TBD.
+**NOTE: This package is compatible with TinkerPop3. For TinkerPop2 compatibility, see the upstream repository [gremlin-node](https://github.com/inolen/gremlin-node).**
+
+**NOTE: This is a Work In Progress. Unit tests pass using TinkerPop3, but much of the TinkerPop2 heritage is still present.  **
 
 ```javascript
 var Gremlin = require('gremlin');
@@ -14,12 +16,12 @@ var gremlin = new Gremlin({
   options: [ ... ]
 });
 
-var TinkerGraphFactory = gremlin.java.import('com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory');
-var graph = TinkerGraphFactory.createTinkerGraphSync();
+var TinkerGraphFactory = gremlin.java.import('com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory');
+var graph = TinkerGraphFactory.createClassicSync();
 var g = gremlin.wrap(graph);
 
 g.V('name', 'marko').next(function (err, v) {
-  v.getProperty('name', function (err, value) {
+  v.value('name', function (err, value) {
     console.log(value);
   });
 });
@@ -27,12 +29,12 @@ g.V('name', 'marko').next(function (err, v) {
 
 ## Promises/A+ API
 
-Gremlin-node as of version 0.4.0 supports the use of Promises/A+ for most functions taking a callback. For example, a portion of the above code could be written as:
+Gremlin-v3 supports the use of Promises/A+ for most functions taking a callback. For example, a portion of the above code could be written as:
 
 ```javascript
 g.V('name', 'marko').next().then(
   function (v) {
-    v.getProperty('name').then(console.log);
+    v.value('name').then(console.log);
   });
 ```
 
@@ -41,7 +43,7 @@ This snippet by itself may seem underwhelming, but consider that with some enhan
 ```
 node > var pipe = g.V('name', 'marko')
 node > var v = pipe.next()
-node > v.getProperty('name')
+node > v.value('name')
 'marko'
 ```
 
@@ -53,6 +55,8 @@ The gremlin-console application contained in this package does not yet have thes
 
 Bridge API to connect with existing Java APIs. Please read the [__node-java__](https://github.com/joeferner/node-java) installation notes, as it outlines how to install the node-java module on specific platforms and its dependencies.
 
+*NOTE: TinkerPop3 requires Java 1.8.*
+
 [__maven__](http://maven.apache.org/index.html)
 
 Maven enables the installation of the base jar files.
@@ -60,10 +64,10 @@ Maven enables the installation of the base jar files.
 ## Installation
 
 ```bash
-$ npm install gremlin
+$ npm install gremlin-v3
 ```
 
-Gremlin-node includes the required .jar files for Gremlin and the TinkerPop stack. It doesn't include any backend specific jars for databases such as Titan or OrientDB.
+gremlin-v3 includes the required .jar files for Gremlin and the TinkerPop stack. It doesn't include any backend specific jars for databases such as Titan or OrientDB.
 
 ## Configuration
 
@@ -93,33 +97,19 @@ var gremlin = new Gremlin({
 
 ## Connecting to a Graph
 
-As mentioned above, gremlin-node only includes jars for the reference Blueprints implementation, TinkerGraph.
+As mentioned above, gremlin-v3 only includes jars for the reference TinkerPop3 implementation, TinkerGraph.
 
-To use another database implementing the Blueprints property graph interfaces (e.g. Titan or OrientDB), the Gremlin constructor must point to a location with the databases compiled jars. A quickstart project for using Titan with gremlin-node is up at [titan-node](https://github.com/inolen/titan-node).
+To use another database implementing the **TinkerPop3** property graph interfaces, the Gremlin constructor must point to a location with the databases compiled jars.
 
 Once the dependent jars are properly loaded into the Java runtime, a graph instance must be created and passed to `gremlin.wrap`.
+
+**Note: Titan 0.4/0.5 is not compatible with TinkerPop3. Titan 0.9 is under development, and has not yet beeen tested with this package.**
 
 ### TinkerGraph
 
 ```javascript
-var TinkerGraphFactory = gremlin.java.import('com.tinkerpop.blueprints.impls.tg.TinkerGraphFactory');
-var graph = TinkerGraphFactory.createTinkerGraphSync();
-var g = gremlin.wrap(graph);
-```
-
-### Titan
-
-```javascript
-var TitanFactory = gremlin.java.import('com.thinkaurelius.titan.core.TitanFactory');
-var graph = TitanFactory.openSync('local:/path/to/config');
-var g = gremlin.wrap(graph);
-```
-
-### OrientGraph
-
-```javascript
-var OrientGraph = g.java.import('com.tinkerpop.blueprints.impls.orient.OrientGraph');
-var graph = new OrientGraph('local:/path/to/database/files', 'admin', 'admin');
+var TinkerGraphFactory = gremlin.java.import('com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory');
+var graph = TinkerGraphFactory.openSync();
 var g = gremlin.wrap(graph);
 ```
 
@@ -151,11 +141,14 @@ A good resource to understand the Gremlin API (for TinkerPop2) is [GremlinDocs](
 
 ## Authors
 
-Frank Panetta  - [Follow @entrendipity](https://twitter.com/intent/follow?screen_name=entrendipity)
+TinkerPop3:
 
-Anthony Pesch - [inolen](https://github.com/inolen)
+* Jim Lloyd - [jimlloyd](https://github.com/jimlloyd)
 
-Jim Lloyd - [jimlloyd](https://github.com/jimlloyd)
+TinkerPop2:
+
+* Frank Panetta  - [Follow @entrendipity](https://twitter.com/intent/follow?screen_name=entrendipity)
+* Anthony Pesch - [inolen](https://github.com/inolen)
 
 ## Contributors
 

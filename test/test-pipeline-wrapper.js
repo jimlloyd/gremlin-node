@@ -43,7 +43,25 @@ suite('pipeline-wrapper', function () {
   setup(function () {
     var TinkerGraphFactory = gremlin.java.import('com.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory');
     graph = TinkerGraphFactory.createClassicSync();
-    g = new GraphWrapper(gremlin, graph);
+    g = gremlin.wrap(graph);
+  });
+
+  test('g.V().has("name", "marko") -> v.value("name")', function (done) {
+    g.V().has('name', 'marko').next(function (err, v) {
+      v.value('name', function (err, value) {
+        assert.strictEqual(value, 'marko');
+        done();
+      });
+    });
+  });
+
+  test('g.V().has("name", "marko") -> v.value("name")', function (done) {
+    g.V().has('name', 'marko').next(function (err, v) {
+      v.value('name', function (err, value) {
+        assert.strictEqual(value, 'marko');
+        done();
+      });
+    });
   });
 
   test('V().next()', function (done) {
@@ -54,7 +72,7 @@ suite('pipeline-wrapper', function () {
       assert.ifError(err);
       assert.ok(v instanceof VertexWrapper);
 
-      v.getProperty('name', function (err, name) {
+      v.value('name', function (err, name) {
         assert.ifError(err);
         assert.strictEqual(name, 'marko');
         done();
@@ -98,7 +116,7 @@ suite('pipeline-wrapper', function () {
       assert.ifError(err);
       assert.ok(v instanceof VertexWrapper);
 
-      v.getProperty('name', function (err, name) {
+      v.value('name', function (err, name) {
         assert.ifError(err);
         assert.strictEqual(name, 'josh');
         done();
@@ -306,7 +324,7 @@ suite('pipeline-wrapper', function () {
     g.E().has('weight', gremlin.Compare.gt, java.newFloat(0.5)).next(function (err, e) {
       assert.ifError(err);
       assert.ok(e instanceof EdgeWrapper);
-      e.getProperty('weight', function (err, weight) {
+      e.value('weight', function (err, weight) {
         assert.ifError(err);
         assert(weight > 0.5);
         assert.strictEqual(e.toStringSync(), 'e[8][1-knows->4]');
@@ -318,7 +336,7 @@ suite('pipeline-wrapper', function () {
   test('has(string key, object value)', function (done) {
     g.V().has('name', 'marko').next(function (err, v) {
       assert.ifError(err);
-      v.getProperty('name', function (err, name) {
+      v.value('name', function (err, name) {
         assert.ifError(err);
         assert.strictEqual(name, 'marko');
         done();
@@ -337,7 +355,7 @@ suite('pipeline-wrapper', function () {
   test('has(string key, token, object value)', function (done) {
     g.V().has('name', gremlin.Compare.eq, 'marko').next(function (err, v) {
       assert.ifError(err);
-      v.getProperty('name', function (err, name) {
+      v.value('name', function (err, name) {
         assert.ifError(err);
         assert.strictEqual(name, 'marko');
         done();
@@ -371,7 +389,7 @@ suite('pipeline-wrapper', function () {
       .then(function (a) {
         assert(_.isArray(a));
         assert.strictEqual(a.length, 3);
-        var p = a.map(function (e) { return e.getProperty('weight'); });
+        var p = a.map(function (e) { return e.value('weight'); });
         Q.all(p)
           .then(function (weights) {
             weights.map(function (w) {
