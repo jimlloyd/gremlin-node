@@ -6,12 +6,12 @@ var path = require('path');
 var Q = require('q');
 var Gremlin = require('../lib/gremlin');
 var GraphWrapper = require('../lib/graph-wrapper');
-var PipelineWrapper = require('../lib/pipeline-wrapper');
+var TraversalWrapper = require('../lib/traversal-wrapper');
 var VertexWrapper = require('../lib/vertex-wrapper');
 var EdgeWrapper = require('../lib/edge-wrapper');
 
 // For reference, see the java interface:
-// https://github.com/tinkerpop/gremlin/blob/master/gremlin-java/src/main/java/com/tinkerpop/gremlin/java/GremlinFluentPipeline.java
+// https://github.com/tinkerpop/gremlin/blob/master/gremlin-java/src/main/java/com/tinkerpop/gremlin/java/GremlinFluentTraversal.java
 
 function verticesMapToStrings(verts) {
   return _.map(verts, function (v) {
@@ -29,7 +29,7 @@ function edgesMapToStrings(edges) {
   });
 }
 
-suite('pipeline-wrapper', function () {
+suite('traversal-wrapper', function () {
   var gremlin;
   var java;
   var graph;
@@ -66,7 +66,7 @@ suite('pipeline-wrapper', function () {
 
   test('V().next()', function (done) {
     var traversal = g.V();
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.next(function (err, v) {
       assert.ifError(err);
@@ -82,7 +82,7 @@ suite('pipeline-wrapper', function () {
 
   test('V().next() -> toJSON', function (done) {
     var traversal = g.V();
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.next(function (err, v) {
       assert.ifError(err);
@@ -162,7 +162,7 @@ suite('pipeline-wrapper', function () {
 
   test('V().has(key, value)', function (done) {
     var traversal = g.V().has('name', 'josh');
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.next(function (err, v) {
       assert.ifError(err);
@@ -178,7 +178,7 @@ suite('pipeline-wrapper', function () {
 
   test('V().toArray()', function (done) {
     var traversal = g.V();
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.toArray(function (err, a) {
       assert.ifError(err);
@@ -191,7 +191,7 @@ suite('pipeline-wrapper', function () {
 
   test('V().has(key, value).toArray()', function (done) {
     var traversal = g.V().has('name', 'josh');
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.toArray(function (err, a) {
       assert.ifError(err);
@@ -204,7 +204,7 @@ suite('pipeline-wrapper', function () {
 
   test('g.V().toArray() -> toJSON()', function (done) {
     var traversal = g.V();
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.toArray(function (err, arr) {
       assert.ifError(err);
@@ -256,7 +256,7 @@ suite('pipeline-wrapper', function () {
 
   test('g.E().next()', function (done) {
     var traversal = g.E();
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.next(function (err, e) {
       assert.ifError(err);
@@ -268,7 +268,7 @@ suite('pipeline-wrapper', function () {
 
   test('g.E().toArray() -> map(toStringSync)', function (done) {
     var traversal = g.E();
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.toArray(function (err, edges) {
       assert.ifError(err);
@@ -288,7 +288,7 @@ suite('pipeline-wrapper', function () {
 
   test('g.E().toArray() -> toJSON', function (done) {
     var traversal = g.E();
-    assert.ok(traversal instanceof PipelineWrapper);
+    assert.ok(traversal instanceof TraversalWrapper);
 
     traversal.toArray()
       .then(gremlin.toJSON.bind(gremlin), assert.ifError)
@@ -601,10 +601,10 @@ suite('pipeline-wrapper', function () {
   });
 
   // TODO
-  // PipelineWrapper.prototype.idEdge = function () {
-  // PipelineWrapper.prototype.id = function () {
-  // PipelineWrapper.prototype.idVertex = function () {
-  // PipelineWrapper.prototype.step = function () {
+  // TraversalWrapper.prototype.idEdge = function () {
+  // TraversalWrapper.prototype.id = function () {
+  // TraversalWrapper.prototype.idVertex = function () {
+  // TraversalWrapper.prototype.step = function () {
 
 // No copySplit or fairMerge in TK3. What are their equivalents? jump() may provide copySplit() functionality.
 //   test.skip('copySplit(), _(), and fairMerge()', function (done) {
@@ -616,11 +616,11 @@ suite('pipeline-wrapper', function () {
 //     });
 //   });
 
-  // PipelineWrapper.prototype.exhaustMerge = function () {
-  // PipelineWrapper.prototype.fairMerge = function () {
-  // PipelineWrapper.prototype.ifThenElse = function () {
-  // PipelineWrapper.prototype.loop = function () {
-  // PipelineWrapper.prototype.and = function (/*final Pipe<E, ?>... pipes*/) {
+  // TraversalWrapper.prototype.exhaustMerge = function () {
+  // TraversalWrapper.prototype.fairMerge = function () {
+  // TraversalWrapper.prototype.ifThenElse = function () {
+  // TraversalWrapper.prototype.loop = function () {
+  // TraversalWrapper.prototype.and = function (/*final Pipe<E, ?>... pipes*/) {
   test('as() and back()', function (done) {
     g.V().as('test').out('knows').back('test').toArray(function (err, recs) {
       assert.ifError(err);
@@ -632,7 +632,7 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  // PipelineWrapper.prototype.except = function () {
+  // TraversalWrapper.prototype.except = function () {
 
   test('sideEffect()', function (done) {
     this.timeout(5000); // A longer timeout is required on Travis
@@ -659,15 +659,15 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  // PipelineWrapper.prototype.or = function (/*final Pipe<E, ?>... pipes*/) {
-  // PipelineWrapper.prototype.random = function () {
-  // PipelineWrapper.prototype.index = function (idx) {
-  // PipelineWrapper.prototype.range = function () {
-  // PipelineWrapper.prototype.retain = function (/*final Collection<E> collection*/) {
-  // PipelineWrapper.prototype.simplePath = function () {
+  // TraversalWrapper.prototype.or = function (/*final Pipe<E, ?>... pipes*/) {
+  // TraversalWrapper.prototype.random = function () {
+  // TraversalWrapper.prototype.index = function (idx) {
+  // TraversalWrapper.prototype.range = function () {
+  // TraversalWrapper.prototype.retain = function (/*final Collection<E> collection*/) {
+  // TraversalWrapper.prototype.simplePath = function () {
 
   test('aggregate()', function (done) {
-    // In TK3, aggregate creates a BulkSet. In PipelineWrapper._jsify we currently transform
+    // In TK3, aggregate creates a BulkSet. In TraversalWrapper._jsify we currently transform
     // BulkSets into an array of object each containing a key and a count.
     // We may change this behavior in the future.
     g.V().aggregate().next(function (err, agg) {
@@ -682,8 +682,8 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  // PipelineWrapper.prototype.optional = function () {
-  // PipelineWrapper.prototype.groupBy = function (map, closure) {
+  // TraversalWrapper.prototype.optional = function () {
+  // TraversalWrapper.prototype.groupBy = function (map, closure) {
 
   test('groupCount()', function (done) {
     g.E().label().groupCount().next(function (err, agg) {
@@ -694,10 +694,10 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  // PipelineWrapper.prototype.linkOut = function () {
-  // PipelineWrapper.prototype.linkIn = function () {
-  // PipelineWrapper.prototype.linkBoth = function () {
-  // PipelineWrapper.prototype.sideEffect = function () {
+  // TraversalWrapper.prototype.linkOut = function () {
+  // TraversalWrapper.prototype.linkIn = function () {
+  // TraversalWrapper.prototype.linkBoth = function () {
+  // TraversalWrapper.prototype.sideEffect = function () {
   test('store()', function (done) {
     g.V().has('lang', 'java').store().next(function (err, agg) {
       // See comment in test for aggregate() above.
@@ -713,16 +713,16 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  // PipelineWrapper.prototype.table = function () {
-  // PipelineWrapper.prototype.tree = function () {
-  // PipelineWrapper.prototype.gather = function () {
-  // PipelineWrapper.prototype._ = function () {
-  // PipelineWrapper.prototype.memoize = function () {
-  // PipelineWrapper.prototype.order = function () {
-  // PipelineWrapper.prototype.path = function () {
-  // PipelineWrapper.prototype.scatter = function () {
-  // PipelineWrapper.prototype.select = function () {
-  // PipelineWrapper.prototype.shuffle = function () {
+  // TraversalWrapper.prototype.table = function () {
+  // TraversalWrapper.prototype.tree = function () {
+  // TraversalWrapper.prototype.gather = function () {
+  // TraversalWrapper.prototype._ = function () {
+  // TraversalWrapper.prototype.memoize = function () {
+  // TraversalWrapper.prototype.order = function () {
+  // TraversalWrapper.prototype.path = function () {
+  // TraversalWrapper.prototype.scatter = function () {
+  // TraversalWrapper.prototype.select = function () {
+  // TraversalWrapper.prototype.shuffle = function () {
 
   test('groupCount() and cap()', function (done) {
     g.V().in().id().groupCount().cap().next(function (err, map) {
@@ -734,7 +734,7 @@ suite('pipeline-wrapper', function () {
     });
   });
 
-  // PipelineWrapper.prototype.orderMap = function () {
-  // PipelineWrapper.prototype.transform = function () {
+  // TraversalWrapper.prototype.orderMap = function () {
+  // TraversalWrapper.prototype.transform = function () {
 
 });
