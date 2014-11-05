@@ -90,7 +90,6 @@ suite('pipeline-wrapper', function () {
 
       gremlin.toJSON(v, function (err, jsonObj) {
         assert.ifError(err);
-//         console.log(require('util').inspect(jsonObj, {depth: null}));
         var expected = {
           id: 1,
           label: 'vertex',
@@ -110,7 +109,6 @@ suite('pipeline-wrapper', function () {
   test('V().has("lang").toJSON', function (done) {
     g.V().has('lang').toJSON(function (err, jsonObj) {
       assert.ifError(err);
-//       console.log(require('util').inspect(jsonObj, {depth: null}));
       var expected = [
         {
           id: 3,
@@ -138,7 +136,6 @@ suite('pipeline-wrapper', function () {
 
   test('V().has("lang").toJSONSync', function (done) {
     var jsonObj = g.V().has('lang').toJSONSync();
-//       console.log(require('util').inspect(jsonObj, {depth: null}));
     var expected = [
       {
         id: 3,
@@ -213,7 +210,6 @@ suite('pipeline-wrapper', function () {
       assert.ifError(err);
 
       gremlin.toJSON(arr, function (err, verts) {
-        // console.log(require('util').inspect(verts, {depth: null}));
         var expected = [
           { id: 1,
             label: 'vertex',
@@ -298,7 +294,6 @@ suite('pipeline-wrapper', function () {
       .then(gremlin.toJSON.bind(gremlin), assert.ifError)
       .then(function (edges) {
         assert.ok(_.isArray(edges));
-        // console.log(require('util').inspect(edges, {depth: null}));
         var expected = [
           { inV: 2,
             inVLabel: 'vertex',
@@ -359,7 +354,6 @@ suite('pipeline-wrapper', function () {
       .then(function (arr) { return gremlin.toJSON(arr); }, assert.ifError)
       .then(function (edges) {
         assert.strictEqual(edges.length, 1);
-        // console.log(require('util').inspect(edges, {depth: null}));
         var expected = [
           { inV: 2,
             inVLabel: 'vertex',

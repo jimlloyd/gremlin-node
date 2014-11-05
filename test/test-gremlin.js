@@ -26,7 +26,6 @@ suite('gremlin', function () {
       assert.ifError(err);
       gremlin.toJSON(res, function (err, json) {
         assert.ifError(err);
-        // console.log(require('util').inspect(json, {depth: null}));
         assert(json.id === 2);
         done();
       });
