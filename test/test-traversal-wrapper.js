@@ -433,8 +433,8 @@ suite('traversal-wrapper', function () {
     var lower = 0.3;
     var upper = 0.9;
 
-    var pipe = g.E().interval('weight', java.newFloat(lower), java.newFloat(upper));
-    pipe.toArray()
+    var traversal = g.E().interval('weight', java.newFloat(lower), java.newFloat(upper));
+    traversal.toArray()
       .then(function (a) {
         assert(_.isArray(a));
         assert.strictEqual(a.length, 3);
@@ -620,7 +620,7 @@ suite('traversal-wrapper', function () {
   // TraversalWrapper.prototype.fairMerge = function () {
   // TraversalWrapper.prototype.ifThenElse = function () {
   // TraversalWrapper.prototype.loop = function () {
-  // TraversalWrapper.prototype.and = function (/*final Pipe<E, ?>... pipes*/) {
+  // TraversalWrapper.prototype.and = function (/*final Traversal<E, ?>... traversals*/) {
   test('as() and back()', function (done) {
     g.V().as('test').out('knows').back('test').toArray(function (err, recs) {
       assert.ifError(err);
@@ -659,7 +659,7 @@ suite('traversal-wrapper', function () {
     });
   });
 
-  // TraversalWrapper.prototype.or = function (/*final Pipe<E, ?>... pipes*/) {
+  // TraversalWrapper.prototype.or = function (/*final Traversal<E, ?>... traversals*/) {
   // TraversalWrapper.prototype.random = function () {
   // TraversalWrapper.prototype.index = function (idx) {
   // TraversalWrapper.prototype.range = function () {
