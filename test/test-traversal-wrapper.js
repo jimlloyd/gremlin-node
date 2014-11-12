@@ -11,7 +11,7 @@ var VertexWrapper = require('../lib/vertex-wrapper');
 var EdgeWrapper = require('../lib/edge-wrapper');
 
 // For reference, see the java interface:
-// https://github.com/tinkerpop/gremlin/blob/master/gremlin-java/src/main/java/com/tinkerpop/gremlin/java/GremlinFluentTraversal.java
+// https://github.com/tinkerpop/tinkerpop3/blob/master/gremlin-core/src/main/java/com/tinkerpop/gremlin/process/Traversal.java
 
 function verticesMapToStrings(verts) {
   return _.map(verts, function (v) {
