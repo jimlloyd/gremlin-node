@@ -461,18 +461,6 @@ suite('traversal-wrapper', function () {
     });
   });
 
-  test('bothE(int branchFactor, string... labels)', function (done) {
-    g.V().bothE(1, 'knows', 'created').toArray(function (err, edges) {
-      assert.ifError(err);
-      assert.strictEqual(edges.length, 6);
-      var counts = _.countBy(edges, function (e) { return e.getLabel(); });
-      // var expected = { created: 3, knows: 3 };  in TK2 unit tests, was 3,3
-      var expected = { created: 4, knows: 2 };    // but in TK3, is now 4,2. WTF?? TODO: is this right?
-      assert.deepEqual(counts, expected);
-      done();
-    });
-  });
-
   test('both(string... labels).toArray()', function (done) {
     g.V().both('knows').toArray(function (err, verts) {
       assert.strictEqual(verts.length, 4);
@@ -488,16 +476,6 @@ suite('traversal-wrapper', function () {
       assert.strictEqual(verts.length, 3);
       var strs = verticesMapToStrings(verts);
       assert.deepEqual(strs, ['v[2]', 'v[4]', 'v[1]']);
-      done();
-    });
-  });
-
-  test('both(int branchFactor, string... labels)', function (done) {
-    g.V().both(1, 'knows').dedup().toArray(function (err, verts) {
-      assert.ifError(err);
-      assert.strictEqual(verts.length, 2);
-      var strs = verticesMapToStrings(verts);
-      assert.deepEqual(strs, ['v[2]', 'v[1]']);
       done();
     });
   });
@@ -587,11 +565,11 @@ suite('traversal-wrapper', function () {
   });
 
   test('value()', function (done) {
-    g.V().value('name').toArray(function (err, names) {
+    g.V().values('name').toArray(function (err, names) {
       assert.ifError(err);
       var expected = [ 'marko', 'vadas', 'lop', 'josh', 'ripple', 'peter' ];
       assert.deepEqual(names, expected);
-      g.V().value('age').toArray(function (err, ages) {
+      g.V().values('age').toArray(function (err, ages) {
         assert.ifError(err);
         var expected = [ 29, 27, 32, 35 ];
         assert.deepEqual(ages, expected);
