@@ -626,8 +626,6 @@ suite('traversal-wrapper', function () {
     });
   });
 
-  // TraversalWrapper.prototype.jump = function () {
-
   // TraversalWrapper.prototype.and = function (/*final Traversal<E, ?>... traversals*/) {
   test('as() and back()', function (done) {
     g.V().as('test').out('knows').back('test').toArray(function (err, recs) {
