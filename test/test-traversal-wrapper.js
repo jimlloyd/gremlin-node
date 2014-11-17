@@ -714,6 +714,23 @@ suite('traversal-wrapper', function () {
       _.forEach(agg, function (item) {
         assert.ok(item.key instanceof VertexWrapper);
         assert.strictEqual(item.count, 1);
+        assert.equal(item.key.valueSync('lang'), 'java');
+      });
+      done();
+    });
+  });
+
+  test('store(\'x\').cap(\'x\')', function (done) {
+    g.V().has('lang', 'java').store('x').cap('x').next(function (err, agg) {
+      // See comment in test for aggregate() above.
+      assert.ifError(err);
+      assert.ok(agg);
+      assert.ok(_.isArray(agg));
+      assert.strictEqual(agg.length, 2);
+      _.forEach(agg, function (item) {
+        assert.ok(item.key instanceof VertexWrapper);
+        assert.strictEqual(item.count, 1);
+        assert.equal(item.key.valueSync('lang'), 'java');
       });
       done();
     });
