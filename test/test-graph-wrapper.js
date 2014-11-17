@@ -263,6 +263,17 @@ suite('graph-wrapper', function () {
       .done(done);
   });
 
+  test('setProperty(key, value) / valueSync(key) using promise API', function (done) {
+    var v;
+    g.getVertex(1)
+      .then(function (_v) { v = _v; assert(v instanceof VertexWrapper); return v; }, assert.ifError)
+      .then(function () { return v.value('name'); }, assert.ifError)
+      .then(function (name) { assert.strictEqual(name, 'marko'); return v; }, assert.ifError)
+      .then(function () { return v.setProperty('name', 'john'); }, assert.ifError)
+      .then(function () { assert.strictEqual(v.valueSync('name'), 'john'); }, assert.ifError)
+      .done(done);
+  });
+
   test('setProperties(props) / values(props) using callback API', function (done) {
     g.getVertex(1, function (err, v) {
       assert.ifError(err);
