@@ -640,7 +640,7 @@ suite('traversal-wrapper', function () {
 
   // TraversalWrapper.prototype.except = function () {
 
-  test('sideEffect()', function (done) {
+  test('filter(predicate)', function (done) {
     this.timeout(5000); // A longer timeout is required on Travis
     var GPredicate = java.import('com.tinkerpop.gremlin.groovy.function.GPredicate');
     var closure = gremlin.getEngine().evalSync('{ it -> it.get().value("name") == "lop" }');
