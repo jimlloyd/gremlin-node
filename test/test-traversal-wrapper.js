@@ -742,7 +742,49 @@ suite('traversal-wrapper', function () {
   // TraversalWrapper.prototype._ = function () {
   // TraversalWrapper.prototype.memoize = function () {
   // TraversalWrapper.prototype.order = function () {
-  // TraversalWrapper.prototype.path = function () {
+
+  test.skip('path simple: g.V().out().out().values(\'name\').path()', function (done) {
+    g.V().out().out().values('name').path().toArray(function (err, paths) {
+      assert.ifError(err);
+      assert.ok(paths);
+      assert.ok(_.isArray(paths));
+      // TODO: Check the values when we can deal with a Path object in the result.
+      done();
+    });
+  });
+
+  test.skip('path with edges: g.V().outE().inV().outE().inV().path()', function (done) {
+    g.V().outE().inV().outE().inV().path().toArray(function (err, paths) {
+      assert.ifError(err);
+      assert.ok(paths);
+      assert.ok(_.isArray(paths));
+      // TODO: Check the values when we can deal with a Path object in the result.
+      done();
+    });
+  });
+
+  test.skip('path with lambda: g.V().out().out().path{it.value(\'name\')}{it.value(\'age\')}', function (done) {
+    var traversal = g.V().out().out().path({ apply: function (it) { return it.value('name'); } },
+                                           { apply: function (it) { return it.value('age'); } });
+    traversal.toArray(function (err, paths) {
+      assert.ifError(err);
+      assert.ok(paths);
+      assert.ok(_.isArray(paths));
+      // TODO: Check the values when we can deal with a Path object in the result.
+      done();
+    });
+  });
+
+  test.skip('path with nested traversal', function (done) {
+    // The Gremlin looks like this:
+    // g.V().out().out().path{
+    //   it.choose({it.get().has('age').hasNext()},
+    //             g.of().out('created').values('name'),
+    //             g.of().in('created').values('name')).toList()}
+    // TODO: What to do with it.choose?
+    // TODO: Finish this.
+  });
+
   // TraversalWrapper.prototype.scatter = function () {
   // TraversalWrapper.prototype.select = function () {
   // TraversalWrapper.prototype.shuffle = function () {
