@@ -96,8 +96,8 @@ suite('traversal-wrapper', function () {
           type: 'vertex',
           properties:
           {
-            name: [ { id: 0, label: 'name', value: 'marko' } ],
-            age: [ { id: 1, label: 'age', value: 29 } ]
+            name: 'marko',
+            age: 29
           }
         };
         assert.deepEqual(jsonObj, expected);
@@ -115,8 +115,8 @@ suite('traversal-wrapper', function () {
           label: 'vertex',
           type: 'vertex',
           properties: {
-            name: [ { id: 4, label: 'name', value: 'lop' } ],
-            lang: [ { id: 5, label: 'lang', value: 'java' } ]
+            name: 'lop',
+            lang: 'java'
           }
         },
         {
@@ -124,8 +124,8 @@ suite('traversal-wrapper', function () {
           label: 'vertex',
           type: 'vertex',
           properties: {
-            name: [ { id: 8, label: 'name', value: 'ripple' } ],
-            lang: [ { id: 9, label: 'lang', value: 'java' } ]
+            name: 'ripple',
+            lang: 'java'
           }
         }
       ];
@@ -142,8 +142,8 @@ suite('traversal-wrapper', function () {
         label: 'vertex',
         type: 'vertex',
         properties: {
-          name: [ { id: 4, label: 'name', value: 'lop' } ],
-          lang: [ { id: 5, label: 'lang', value: 'java' } ]
+          name: 'lop',
+          lang: 'java'
         }
       },
       {
@@ -151,8 +151,8 @@ suite('traversal-wrapper', function () {
         label: 'vertex',
         type: 'vertex',
         properties: {
-          name: [ { id: 8, label: 'name', value: 'ripple' } ],
-          lang: [ { id: 9, label: 'lang', value: 'java' } ]
+          name: 'ripple',
+          lang: 'java'
         }
       }
     ];
@@ -215,38 +215,38 @@ suite('traversal-wrapper', function () {
             label: 'vertex',
             type: 'vertex',
             properties:
-             { name: [ { id: 0, label: 'name', value: 'marko' } ],
-               age: [ { id: 1, label: 'age', value: 29 } ] } },
+             { name: 'marko',
+               age: 29 } },
           { id: 2,
             label: 'vertex',
             type: 'vertex',
             properties:
-             { name: [ { id: 2, label: 'name', value: 'vadas' } ],
-               age: [ { id: 3, label: 'age', value: 27 } ] } },
+             { name: 'vadas',
+               age: 27 } },
           { id: 3,
             label: 'vertex',
             type: 'vertex',
             properties:
-             { name: [ { id: 4, label: 'name', value: 'lop' } ],
-               lang: [ { id: 5, label: 'lang', value: 'java' } ] } },
+             { name: 'lop',
+               lang: 'java' } },
           { id: 4,
             label: 'vertex',
             type: 'vertex',
             properties:
-             { name: [ { id: 6, label: 'name', value: 'josh' } ],
-               age: [ { id: 7, label: 'age', value: 32 } ] } },
+             { name: 'josh',
+               age: 32 } },
           { id: 5,
             label: 'vertex',
             type: 'vertex',
             properties:
-             { name: [ { id: 8, label: 'name', value: 'ripple' } ],
-               lang: [ { id: 9, label: 'lang', value: 'java' } ] } },
+             { name: 'ripple',
+               lang: 'java' } },
           { id: 6,
             label: 'vertex',
             type: 'vertex',
             properties:
-             { name: [ { id: 10, label: 'name', value: 'peter' } ],
-               age: [ { id: 11, label: 'age', value: 35 } ] } }
+             { name: 'peter',
+               age: 35 } }
         ];
         assert.deepEqual(verts, expected);
         done();
@@ -656,8 +656,8 @@ suite('traversal-wrapper', function () {
           label: 'vertex',
           type: 'vertex',
           properties:
-           { name: [ { id: 4, label: 'name', value: 'lop' } ],
-             lang: [ { id: 5, label: 'lang', value: 'java' } ] }
+           { name: 'lop',
+             lang: 'java' }
         };
         assert.deepEqual(jsonObj, expected);
         done();

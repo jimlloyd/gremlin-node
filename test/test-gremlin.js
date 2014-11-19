@@ -5,6 +5,7 @@ var assert = require('assert');
 var sinon = require('sinon');
 var Gremlin = require('../lib/gremlin');
 var GraphWrapper = require('../lib/graph-wrapper');
+var VertexWrapper = require('../lib/vertex-wrapper');
 
 suite('gremlin', function () {
   var gremlin;
@@ -22,21 +23,23 @@ suite('gremlin', function () {
   });
 
   test('Wrapped objects can be converted to JS objects using gremlin.toJSON', function (done) {
-    g.v(2, function (err, res) {
+    g.v(2, function (err, v) {
       assert.ifError(err);
-      gremlin.toJSON(res, function (err, json) {
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, function (err, json) {
         assert.ifError(err);
-        assert(json.id === 2);
+        assert.strictEqual(json.id, 2);
         done();
       });
     });
   });
 
   test('Wrapped objects can be converted to JS objects using gremlin.toJSONSync', function (done) {
-    g.v(2, function (err, res) {
+    g.v(2, function (err, v) {
       assert.ifError(err);
-      var json = gremlin.toJSONSync(res);
-      assert(json.id === 2);
+      assert(v instanceof VertexWrapper);
+      var json = gremlin.toJSONSync(v);
+      assert.strictEqual(json.id, 2);
       done();
     });
   });
