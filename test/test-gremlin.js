@@ -44,6 +44,67 @@ suite('gremlin', function () {
     });
   });
 
+  test('gremlin.toJSON returns simple vertex by default', function (done) {
+    g.v(2, function (err, v) {
+      assert.ifError(err);
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, function (err, json) {
+        assert.ifError(err);
+        var expected = {
+          id: 2,
+          label: 'vertex',
+          type: 'vertex',
+          properties: {name: 'vadas', age: 27}
+        };
+        assert.deepEqual(json, expected);
+        done();
+      });
+    });
+  });
+
+  test('gremlin.toJSON(keepHiddens) returns full tinkerpop3 vertex', function (done) {
+    g.v(2, function (err, v) {
+      assert.ifError(err);
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, { keepHiddens: true }, function (err, json) {
+        assert.ifError(err);
+        var expected = { id: 2,
+          label: 'vertex',
+          type: 'vertex',
+          hiddens: {},
+          properties: { name: 'vadas', age: 27 }
+        };
+        assert.deepEqual(json, expected);
+        done();
+      });
+    });
+  });
+
+  test('gremlin.toJSON(strict) returns full tinkerpop3 vertex', function (done) {
+    g.v(2, function (err, v) {
+      assert.ifError(err);
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, { strict: true }, function (err, json) {
+        assert.ifError(err);
+        var expected = { id: 2,
+          label: 'vertex',
+          type: 'vertex',
+          hiddens: {},
+          properties:
+           { name:
+              [ { id: 2,
+                  label: 'name',
+                  hiddens: {},
+                  value: 'vadas',
+                  properties: {} } ],
+             age: [ { id: 3, label: 'age', hiddens: {}, value: 27, properties: {} } ] }
+        };
+        assert.deepEqual(json, expected);
+        done();
+      });
+    });
+  });
+
   test('gremlin.toJSON returns null when passed null', function (done) {
     gremlin.toJSON(null, function (err, json) {
       assert.ifError(err);
