@@ -5,6 +5,7 @@ var assert = require('assert');
 var sinon = require('sinon');
 var Gremlin = require('../lib/gremlin');
 var GraphWrapper = require('../lib/graph-wrapper');
+var VertexWrapper = require('../lib/vertex-wrapper');
 
 suite('gremlin', function () {
   var gremlin;
@@ -22,22 +23,85 @@ suite('gremlin', function () {
   });
 
   test('Wrapped objects can be converted to JS objects using gremlin.toJSON', function (done) {
-    g.v(2, function (err, res) {
+    g.v(2, function (err, v) {
       assert.ifError(err);
-      gremlin.toJSON(res, function (err, json) {
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, function (err, json) {
         assert.ifError(err);
-        assert(json.id === 2);
+        assert.strictEqual(json.id, 2);
         done();
       });
     });
   });
 
   test('Wrapped objects can be converted to JS objects using gremlin.toJSONSync', function (done) {
-    g.v(2, function (err, res) {
+    g.v(2, function (err, v) {
       assert.ifError(err);
-      var json = gremlin.toJSONSync(res);
-      assert(json.id === 2);
+      assert(v instanceof VertexWrapper);
+      var json = gremlin.toJSONSync(v);
+      assert.strictEqual(json.id, 2);
       done();
+    });
+  });
+
+  test('gremlin.toJSON returns simple vertex by default', function (done) {
+    g.v(2, function (err, v) {
+      assert.ifError(err);
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, function (err, json) {
+        assert.ifError(err);
+        var expected = {
+          id: 2,
+          label: 'vertex',
+          type: 'vertex',
+          properties: {name: 'vadas', age: 27}
+        };
+        assert.deepEqual(json, expected);
+        done();
+      });
+    });
+  });
+
+  test('gremlin.toJSON(keepHiddens) returns full tinkerpop3 vertex', function (done) {
+    g.v(2, function (err, v) {
+      assert.ifError(err);
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, { keepHiddens: true }, function (err, json) {
+        assert.ifError(err);
+        var expected = { id: 2,
+          label: 'vertex',
+          type: 'vertex',
+          hiddens: {},
+          properties: { name: 'vadas', age: 27 }
+        };
+        assert.deepEqual(json, expected);
+        done();
+      });
+    });
+  });
+
+  test('gremlin.toJSON(strict) returns full tinkerpop3 vertex', function (done) {
+    g.v(2, function (err, v) {
+      assert.ifError(err);
+      assert(v instanceof VertexWrapper);
+      gremlin.toJSON(v, { strict: true }, function (err, json) {
+        assert.ifError(err);
+        var expected = { id: 2,
+          label: 'vertex',
+          type: 'vertex',
+          hiddens: {},
+          properties:
+           { name:
+              [ { id: 2,
+                  label: 'name',
+                  hiddens: {},
+                  value: 'vadas',
+                  properties: {} } ],
+             age: [ { id: 3, label: 'age', hiddens: {}, value: 27, properties: {} } ] }
+        };
+        assert.deepEqual(json, expected);
+        done();
+      });
     });
   });
 
