@@ -10,6 +10,8 @@ var TraversalWrapper = require('../lib/traversal-wrapper');
 var VertexWrapper = require('../lib/vertex-wrapper');
 var EdgeWrapper = require('../lib/edge-wrapper');
 
+var dlog = require('debug')('test:traversal');
+
 // For reference, see the java interface:
 // https://github.com/tinkerpop/tinkerpop3/blob/master/gremlin-core/src/main/java/com/tinkerpop/gremlin/process/Traversal.java
 
@@ -53,6 +55,32 @@ suite('traversal-wrapper', function () {
         done();
       });
     });
+  });
+
+  test('g.V().next() async', function (done) {
+    g.V().next(function (err, v) {
+      assert.ifError(err);
+      assert.ok(v instanceof VertexWrapper);
+      done();
+    });
+  });
+
+  test('g.V().next() promise', function (done) {
+    var promise = g.V().next();
+    assert.ok(Q.isPromise(promise));
+    promise.then(function (v) { assert.ok(v instanceof VertexWrapper); })
+      .done(done);
+  });
+
+  test('g.V().iterate() promise', function (done) {
+    dlog('creating traversal');
+    var trav = g.V().as('loop').both().jump('loop', 100);
+    dlog('created traversal up to jump 100');
+    var promise = trav.iterate();
+    dlog('created promise for traversal.iterate()');
+    assert.ok(Q.isPromise(promise));
+    promise.then(function (emptyTraversal) { dlog('resolved promise'); assert.ok(emptyTraversal); })
+      .done(done);
   });
 
   test('g.V().has("name", "marko") -> v.value("name")', function (done) {
@@ -292,6 +320,68 @@ suite('traversal-wrapper', function () {
 
     traversal.toArray()
       .then(gremlin.toJSON.bind(gremlin), assert.ifError)
+      .then(function (edges) {
+        assert.ok(_.isArray(edges));
+        var expected = [
+          { inV: 2,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 7,
+            label: 'knows',
+            type: 'edge',
+            outV: 1,
+            properties: { weight: 0.5 } },
+          { inV: 4,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 8,
+            label: 'knows',
+            type: 'edge',
+            outV: 1,
+            properties: { weight: 1 } },
+          { inV: 3,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 9,
+            label: 'created',
+            type: 'edge',
+            outV: 1,
+            properties: { weight: 0.4 } },
+          { inV: 5,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 10,
+            label: 'created',
+            type: 'edge',
+            outV: 4,
+            properties: { weight: 1 } },
+          { inV: 3,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 11,
+            label: 'created',
+            type: 'edge',
+            outV: 4,
+            properties: { weight: 0.4 } },
+          { inV: 3,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 12,
+            label: 'created',
+            type: 'edge',
+            outV: 6,
+            properties: { weight: 0.2 } }
+        ];
+        assert.deepEqual(edges, expected);
+      }, assert.ifError)
+      .done(done);
+  });
+
+  test('g.E().toJSON()', function (done) {
+    var traversal = g.E();
+    assert.ok(traversal instanceof TraversalWrapper);
+
+    traversal.toJSON()
       .then(function (edges) {
         assert.ok(_.isArray(edges));
         var expected = [
@@ -801,5 +891,112 @@ suite('traversal-wrapper', function () {
 
   // TraversalWrapper.prototype.orderMap = function () {
   // TraversalWrapper.prototype.transform = function () {
+
+  var testProps = {
+    foo: 'bar',
+    answer: 42
+  };
+
+  test('addInE()', function (done) {
+    g.V().has(gremlin.T.id, 1).as('knower').out('knows').out('created').addInE('knowscreator', 'knower', testProps).iterate()
+      .then(function () {
+        g.E().has(gremlin.T.label, 'knowscreator').toJSON(function (err, edges) {
+          assert.ifError(err);
+          var expected = [ { inV: 5,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 12,
+            label: 'knowscreator',
+            type: 'edge',
+            outV: 1,
+            properties: { answer: 42, foo: 'bar' } },
+          { inV: 3,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 13,
+            label: 'knowscreator',
+            type: 'edge',
+            outV: 1,
+            properties: { answer: 42, foo: 'bar' } }
+          ];
+          assert.deepEqual(edges, expected);
+          done();
+        });
+      });
+  });
+
+  test('addE(in)', function (done) {
+    g.V().has(gremlin.T.id, 1).as('knower').out('knows').out('created').addE(gremlin.Direction.IN, 'knowscreator', 'knower', testProps).iterate()
+      .then(function () {
+        g.E().has(gremlin.T.label, 'knowscreator').toJSON(function (err, edges) {
+          assert.ifError(err);
+          var expected = [ { inV: 5,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 12,
+            label: 'knowscreator',
+            type: 'edge',
+            outV: 1,
+            properties: { answer: 42, foo: 'bar' } },
+          { inV: 3,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 13,
+            label: 'knowscreator',
+            type: 'edge',
+            outV: 1,
+            properties: { answer: 42, foo: 'bar' } }
+          ];
+          assert.deepEqual(edges, expected);
+          done();
+        });
+      });
+  });
+
+  test('addOutE()', function (done) {
+    g.V().has(gremlin.T.id, 1).as('known').out('knows').out('created').addOutE('creatorknows', 'known', testProps).iterate()
+      .then(function () {
+        g.E().has(gremlin.T.label, 'creatorknows').toJSON(function (err, edges) {
+          assert.ifError(err);
+          var expected = [ { inV: 1,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 12,
+            label: 'creatorknows',
+            type: 'edge',
+            outV: 5,
+            properties: { answer: 42, foo: 'bar' } },
+          { inV: 1,
+            inVLabel: 'vertex',
+            outVLabel: 'vertex',
+            id: 13,
+            label: 'creatorknows',
+            type: 'edge',
+            outV: 3,
+            properties: { answer: 42, foo: 'bar' } }
+          ];
+          assert.deepEqual(edges, expected);
+          done();
+        });
+      });
+  });
+
+  test('addBothE()', function (done) {
+    g.V().has(gremlin.T.id, 1).as('knower').out('knows').out('created').addBothE('knows<->creator', 'knower', testProps).iterate()
+      .then(function () {
+        g.E().has(gremlin.T.label, 'knows<->creator').toArray(function (err, edges) {
+          assert.ifError(err);
+          var estrs = edgesMapToStrings(edges);
+          var expected = [
+            'e[12][1-knows<->creator->5]',
+            'e[13][5-knows<->creator->1]',
+            'e[14][1-knows<->creator->3]',
+            'e[15][3-knows<->creator->1]'
+          ];
+          assert.deepEqual(estrs, expected);
+          done();
+        });
+      });
+  });
 
 });
