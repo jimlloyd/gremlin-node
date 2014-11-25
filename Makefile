@@ -9,7 +9,7 @@ package:
 	mvn clean package
 
 lint:
-	find bin lib test -name "*.js" | xargs node_modules/jshint/bin/jshint
+	node_modules/jshint/bin/jshint --verbose bin lib test
 
 test: lint
 	node_modules/mocha/bin/mocha --reporter=spec --ui tdd
