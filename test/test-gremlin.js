@@ -6,6 +6,7 @@ var sinon = require('sinon');
 var Gremlin = require('../lib/gremlin');
 var GraphWrapper = require('../lib/graph-wrapper');
 var VertexWrapper = require('../lib/vertex-wrapper');
+var EdgeWrapper = require('../lib/edge-wrapper');
 
 suite('gremlin', function () {
   var gremlin;
@@ -133,6 +134,19 @@ suite('gremlin', function () {
     gremlin.toList(['a', 'b', 'c'])
       .then(function (list) { assert(gremlin.isType(list, 'java.util.Collection')); }, assert.ifError)
       .done(done);
+  });
+
+  test('gremlin.forEach()', function (done) {
+    var iterator = g.E();
+    var count = 0;
+    gremlin.forEach(iterator, function (elem) {
+      assert.ok(elem instanceof EdgeWrapper);
+      ++count;
+    })
+    .then(function () {
+      assert.strictEqual(count, 6);
+    })
+    .done(done);
   });
 
 });
