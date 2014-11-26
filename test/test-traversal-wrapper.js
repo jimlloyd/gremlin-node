@@ -10,6 +10,8 @@ var TraversalWrapper = require('../lib/traversal-wrapper');
 var VertexWrapper = require('../lib/vertex-wrapper');
 var EdgeWrapper = require('../lib/edge-wrapper');
 
+var dlog = require('debug')('test:traversal');
+
 // For reference, see the java interface:
 // https://github.com/tinkerpop/tinkerpop3/blob/master/gremlin-core/src/main/java/com/tinkerpop/gremlin/process/Traversal.java
 
@@ -53,6 +55,32 @@ suite('traversal-wrapper', function () {
         done();
       });
     });
+  });
+
+  test('g.V().next() async', function (done) {
+    g.V().next(function (err, v) {
+      assert.ifError(err);
+      assert.ok(v instanceof VertexWrapper);
+      done();
+    });
+  });
+
+  test('g.V().next() promise', function (done) {
+    var promise = g.V().next();
+    assert.ok(Q.isPromise(promise));
+    promise.then(function (v) { assert.ok(v instanceof VertexWrapper); })
+      .done(done);
+  });
+
+  test('g.V().iterate() promise', function (done) {
+    dlog('creating traversal');
+    var trav = g.V().as('loop').both().jump('loop', 100);
+    dlog('created traversal up to jump 100');
+    var promise = trav.iterate();
+    dlog('created promise for traversal.iterate()');
+    assert.ok(Q.isPromise(promise));
+    promise.then(function (emptyTraversal) { dlog('resolved promise'); assert.ok(emptyTraversal); })
+      .done(done);
   });
 
   test('g.V().has("name", "marko") -> v.value("name")', function (done) {
