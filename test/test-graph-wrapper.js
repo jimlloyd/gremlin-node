@@ -61,6 +61,7 @@ suite('graph-wrapper', function () {
       toListSync: function () {},
       toJSON: function () {},
       toJSONSync: function () {},
+      propertiesToVarArgs: function () {},
       java: fakeJava
     };
     var fakeArrayList = {
