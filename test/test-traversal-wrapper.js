@@ -999,4 +999,16 @@ suite('traversal-wrapper', function () {
       });
   });
 
+  test('forEach()', function (done) {
+    var count = 0;
+    g.E().forEach(function (elem) {
+      assert.ok(elem instanceof EdgeWrapper);
+      ++count;
+    })
+    .then(function () {
+      assert.strictEqual(count, 6);
+    })
+    .done(done);
+  });
+
 });
