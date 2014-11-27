@@ -136,7 +136,21 @@ suite('gremlin', function () {
       .done(done);
   });
 
-  test('gremlin.forEach()', function (done) {
+  test('gremlin.forEach() ArrayList', function (done) {
+    var list = gremlin.toListSync(['a', 'b', 'c']);
+    var iterator = list.listIteratorSync();
+    var count = 0;
+    gremlin.forEach(iterator, function (elem) {
+      assert.ok(_.isString(elem));
+      ++count;
+    })
+    .then(function () {
+      assert.strictEqual(count, 3);
+    })
+    .done(done);
+  });
+
+  test('gremlin.forEach() Traversal', function (done) {
     var iterator = g.E();
     var count = 0;
     gremlin.forEach(iterator, function (elem) {
