@@ -389,7 +389,7 @@ suite('graph-wrapper', function () {
     });
   });
 
-  test('g.toJSON() using promise API', function (done) {
+  test('g.toString() using promise API', function (done) {
     var expected = 'tinkergraph[vertices:6 edges:6]';
     g.toString()
       .then(function (str) { assert.strictEqual(str, expected); }, assert.ifError)
