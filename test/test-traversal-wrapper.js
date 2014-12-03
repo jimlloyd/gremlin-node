@@ -775,8 +775,80 @@ suite('traversal-wrapper', function () {
   });
 
   // TraversalWrapper.prototype.scatter = function () {
-  // TraversalWrapper.prototype.select = function () {
   // TraversalWrapper.prototype.shuffle = function () {
+
+  test('select() with labels only', function (done) {
+    var results = g.E().as('e')
+      .inV().id().as('inV')
+      .back('e').outV().id().as('outV')
+      .select(['inV', 'outV'])
+      .toJSONSync();
+    var expected = [
+      { inV: 2, outV: 1 },
+      { inV: 4, outV: 1 },
+      { inV: 3, outV: 1 },
+      { inV: 5, outV: 4 },
+      { inV: 3, outV: 4 },
+      { inV: 3, outV: 6 }
+    ];
+    assert.deepEqual(results, expected);
+    done();
+  });
+
+  test('select() with labels and functions', function (done) {
+    var results = g.E().as('e')
+      .inV().id().as('inV')
+      .back('e').outV().id().as('outV')
+      .select(['inV', 'outV'], ['{it -> it+1000}', '{it -> it+2000}'])
+      .toJSONSync();
+    var expected = [
+      { inV: 1002, outV: 2001 },
+      { inV: 1004, outV: 2001 },
+      { inV: 1003, outV: 2001 },
+      { inV: 1005, outV: 2004 },
+      { inV: 1003, outV: 2004 },
+      { inV: 1003, outV: 2006 }
+    ];
+    assert.deepEqual(results, expected);
+    done();
+  });
+
+  test('select() with labels and not enough functions', function (done) {
+    var results = g.E().as('e')
+      .inV().id().as('inV')
+      .back('e').outV().id().as('outV')
+      .select(['inV', 'outV'], ['{it -> it+1000}'])
+      .toJSONSync();
+    var expected = [
+      { inV: 1002, outV: 1001 },
+      { inV: 1004, outV: 1001 },
+      { inV: 1003, outV: 1001 },
+      { inV: 1005, outV: 1004 },
+      { inV: 1003, outV: 1004 },
+      { inV: 1003, outV: 1006 }
+    ];
+    assert.deepEqual(results, expected);
+    done();
+  });
+
+  test('select() with only functions', function (done) {
+    var results = g.V().as('a').out('created').in('created').as('b').select([], ['{it -> it.value("name")}'])
+      .toJSONSync();
+    var expected = [
+      { a: 'marko', b: 'marko' },
+      { a: 'marko', b: 'josh' },
+      { a: 'marko', b: 'peter' },
+      { a: 'josh', b: 'josh' },
+      { a: 'josh', b: 'marko' },
+      { a: 'josh', b: 'josh' },
+      { a: 'josh', b: 'peter' },
+      { a: 'peter', b: 'marko' },
+      { a: 'peter', b: 'josh' },
+      { a: 'peter', b: 'peter' }
+    ];
+    assert.deepEqual(results, expected);
+    done();
+  });
 
   test('groupCount() and cap()', function (done) {
     g.V().in().id().groupCount().cap().next(function (err, map) {
