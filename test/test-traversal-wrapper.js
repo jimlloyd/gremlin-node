@@ -856,7 +856,7 @@ suite('traversal-wrapper', function () {
         var asJson = JSON.parse(JSON.stringify(pair));
         assert.deepEqual(_.keys(asJson), ['a', 'b']);
         _.forOwn(asJson, function (value, key) {
-          assert.deepEqual(_.keys(value), ['id', 'label', 'type', 'hiddens', 'properties']);
+          assert.deepEqual(_.keys(value), ['id', 'label', 'type', 'properties']);
           assert.strictEqual(value.label, 'vertex');
           assert.strictEqual(value.type, 'vertex');
           assert.deepEqual(_.keys(value.properties), ['name', 'age']);
