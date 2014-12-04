@@ -10,7 +10,7 @@
   <name>gremlin</name>
 
   <properties>
-    <gremlin.version>3.0.0.M5</gremlin.version>
+    <gremlin.version>3.0.0.M6</gremlin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 

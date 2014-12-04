@@ -48,6 +48,36 @@ suite('traversal-wrapper', function () {
     g = gremlin.wrap(graph);
   });
 
+  test('Confirm Traversal API', function (done) {
+    var expected = [
+      // This is an index of the GraphTraversal API we implement.
+      // See http://www.tinkerpop.com/javadocs/3.0.0.M6/full/com/tinkerpop/gremlin/process/graph/GraphTraversal.html
+      // This test will fail only if TinkerPop changes the api of 'com.tinkerpop.gremlin.process.graph.GraphTraversal'
+      'addBothE', 'addE', 'addInE', 'addOutE', 'addStart', 'addStarts', 'addStep', 'aggregate',
+      'applyStrategies', 'as', 'back', 'both', 'bothE', 'bothV', 'cap', 'choose', 'clone', 'count',
+      'cyclicPath', 'dedup', 'equals', 'except', 'fill', 'filter', 'flatMap', 'fold',
+      'forEachRemaining', 'getClass', 'getSteps', 'groupBy', 'groupCount', 'has', 'hasNext',
+      'hasNot', 'hashCode', 'hiddenMap', 'hiddenValueMap', 'hiddenValues', 'hiddens', 'id',
+      'identity', 'in', 'inE', 'inV', 'inject', 'interval', 'isLocked', 'iterate', 'jump', 'key',
+      'label', 'limit', 'localLimit', 'localRange', 'map', 'match', 'next', 'notify', 'notifyAll',
+      'order', 'orderBy', 'otherV', 'out', 'outE', 'outV', 'path', 'profile', 'properties',
+      'propertyMap', 'random', 'range', 'remove', 'reset', 'retain', 'reverse', 'sack', 'select',
+      'shuffle', 'sideEffect', 'sideEffects', 'simplePath', 'store', 'subgraph', 'submit', 'sum',
+      'timeLimit', 'to', 'toE', 'toList', 'toSet', 'toString', 'toV', 'tree', 'unfold', 'union',
+      'until', 'value', 'valueMap', 'values', 'wait', 'where', 'withPath', 'withSack',
+      'withSideEffect'
+    ];
+    var javaTraversal = g.V().unwrap();
+    assert.ok(gremlin.isType(javaTraversal, 'com.tinkerpop.gremlin.process.graph.GraphTraversal'));
+    var methods = _.functions(javaTraversal);
+    var asyncMethods = _.filter(methods, function (method) { return !method.match(/Sync$/); }).sort();
+    var syncMethods = _.filter(methods, function (method) { return method.match(/Sync$/); });
+    syncMethods = _.map(syncMethods, function (method) { return method.match(/^(\w+)Sync$/)[1]; }).sort();
+    assert.deepEqual(asyncMethods, expected);
+    assert.deepEqual(syncMethods, expected);
+    done();
+  });
+
   test('g.V().has("name", "marko") -> v.value("name")', function (done) {
     g.V().has('name', 'marko').next(function (err, v) {
       v.value('name', function (err, value) {
@@ -856,7 +886,7 @@ suite('traversal-wrapper', function () {
         var asJson = JSON.parse(JSON.stringify(pair));
         assert.deepEqual(_.keys(asJson), ['a', 'b']);
         _.forOwn(asJson, function (value, key) {
-          assert.deepEqual(_.keys(value), ['id', 'label', 'type', 'hiddens', 'properties']);
+          assert.deepEqual(_.keys(value), ['id', 'label', 'type', 'properties']);
           assert.strictEqual(value.label, 'vertex');
           assert.strictEqual(value.type, 'vertex');
           assert.deepEqual(_.keys(value.properties), ['name', 'age']);
