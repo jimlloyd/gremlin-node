@@ -1,7 +1,7 @@
 {
   "name": "gremlin-v3",
   "description": "Gremlin for graph databases which implement the TinkerPop3 property graph data model.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "keywords": [
     "gremlin",
     "tinkerpop3",
@@ -16,6 +16,10 @@
     {
       "name": "Jim Lloyd",
       "email": "jim.lloyd@gmail.com"
+    },
+    {
+      "name": "Matt Frantz",
+      "email": "matthew.h.frantz@gmail.com"
     },
     {
       "name": "Anthony Pesch",
