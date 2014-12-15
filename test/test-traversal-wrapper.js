@@ -1023,4 +1023,13 @@ suite('traversal-wrapper', function () {
     .done(done);
   });
 
+  test('subgraph()', function (done) {
+    g.E().subgraph('{ it -> it.label() == "knows" }')
+      .then(function (sg) {
+        assert.ok(sg instanceof GraphWrapper);
+        assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
+      })
+      .done(done);
+  });
+
 });
