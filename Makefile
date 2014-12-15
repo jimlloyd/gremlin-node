@@ -12,4 +12,4 @@ lint:
 	node_modules/jshint/bin/jshint --verbose bin lib test
 
 test: lint
-	node_modules/mocha/bin/mocha --reporter=spec --ui tdd
+	node_modules/mocha/bin/mocha --timeout 5s --reporter=spec --ui tdd
