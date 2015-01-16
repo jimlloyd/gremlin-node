@@ -1040,4 +1040,52 @@ suite('traversal-wrapper', function () {
       .done(done);
   });
 
+  // Import a Java class or package into the Groovy engine.
+  // - *javaClassOrPkg* can be either class name, e.g. 'java.util.HashSet', or package spec, e.g. 'java.util.*'.
+  function importGroovy(javaClassOrPkg) {
+    var engine = gremlin.getEngine();
+    var HashSet = gremlin.java.import('java.util.HashSet');
+    var imports = new HashSet();
+    imports.addSync('import ' + javaClassOrPkg);
+    engine.addImportsSync(imports);
+  }
+
+  // Extend a traversal by adding a 'map' step that uses a Groovy function to transform the traverser.
+  function mapTraversal(traversal, groovy) {
+    var GFunction = java.import('com.tinkerpop.gremlin.groovy.function.GFunction');
+    var closure = gremlin.getEngine().evalSync(groovy);
+    var gfunction = new GFunction(closure);
+    var unwrapped = traversal.unwrap();
+    var mappedTraversal = gremlin.wrapTraversal(unwrapped.mapSync(gfunction));
+    return mappedTraversal;
+  }
+
+  test('asJSONSync with Java objects', function () {
+    importGroovy('java.net.Inet4Address');
+    // This will produce a list (java.util.List) containing two Inet4Address objects, testing both the translation of
+    // the list into a JS array, and the "toString" of the Java objects.
+    var groovy = '{ it -> [ Inet4Address.getByName("127.0.0.1"), Inet4Address.getByName("10.1.1.100") ] }';
+    // Use a traversal that will produce a single vertex, which we will convert to an IP address object.
+    var traversal = g.V().has('name', 'josh');
+    var actual = mapTraversal(traversal, groovy).asJSONSync();
+    var expected = [[{ javaClass: 'java.net.Inet4Address', toString: '/127.0.0.1' },
+                     { javaClass: 'java.net.Inet4Address', toString: '/10.1.1.100' }]];
+    assert.deepEqual(actual, expected);
+  });
+
+  test('asJSONSync with Java map', function () {
+    // The 'select' will produce a java.util.Map, which should be transformed into a JS object.
+    var traversal = g.V().has('name', 'josh').as('josh')
+        .values('name').as('joshName')
+        .back('josh').out()
+        .values('name').as('outName')
+        .select(['joshName', 'outName']);
+    var actual = traversal.asJSONSync();
+    var expected = [
+      { joshName: 'josh', outName: 'ripple' },
+      { joshName: 'josh', outName: 'lop' },
+    ];
+    assert.deepEqual(actual.sort(), expected.sort());
+  });
+
 });
