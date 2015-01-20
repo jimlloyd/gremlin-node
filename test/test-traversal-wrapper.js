@@ -447,11 +447,11 @@ suite('traversal-wrapper', function () {
   //   });
   // });
 
-  test('interval(string key, object start, object end)', function (done) {
+  test('between(string key, object start, object end)', function (done) {
     var lower = 0.3;
     var upper = 0.9;
 
-    var traversal = g.E().interval('weight', java.newFloat(lower), java.newFloat(upper));
+    var traversal = g.E().between('weight', java.newFloat(lower), java.newFloat(upper));
     traversal.toArray()
       .then(function (a) {
         assert(_.isArray(a));
