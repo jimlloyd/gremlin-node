@@ -595,6 +595,62 @@ suite('traversal-wrapper', function () {
     });
   });
 
+  test('choose(Predicate, Traversal, Traversal)', function (done) {
+    var __ = gremlin.__;
+
+    // If the predicate is true, then do `in`, else do `out`.
+    var chosen = g.V().choose('{ vertex -> vertex.value("name").length() == 5 }',
+                               __.in(),
+                               __.out()).values('name');
+
+    chosen.toArray()
+      .then(function (actual) {
+        var expected = ['marko', 'ripple', 'lop'];
+        assert.deepEqual(actual.sort(), expected.sort());
+      })
+      .done(done);
+  });
+
+  test('choose(Function, Map) Java Map provided', function (done) {
+    var __ = gremlin.__;
+
+    // Use the result of the function as a key to the map of traversal choices.
+    var groovy = '{ vertex -> vertex.value("name").length() }';
+
+    // The choices are based on an integer value, so we cannot use a JS object as the map because it only has string
+    // keys.  Instead, we must construct a Java Map.
+    var choices = new gremlin.HashMap();
+    choices.putSync(5, __.in().unwrap());
+    choices.putSync(4, __.out().unwrap());
+    choices.putSync(3, __.both().unwrap());
+
+    var chosen = g.V().has('age').choose(groovy, choices).values('name');
+    chosen.toArray()
+      .then(function (actual) {
+        var expected = ['marko', 'ripple', 'lop'];
+        assert.deepEqual(actual.sort(), expected.sort());
+      })
+      .done(done);
+  });
+
+  test('choose(Function, Map) JavaScript object provided', function (done) {
+    var __ = gremlin.__;
+
+    // Use the result of the function (which must be a string) as a key to the map of traversal choices.
+    var groovy = '{ vertex -> vertex.value("name") }';
+
+    // The choices are based on a string value, so we can use a JS object as the map.
+    var choices = { marko: __.in(), josh: __.out(), lop: __.both(), vadas: __.in(), peter: __.in() };
+
+    var chosen = g.V().has('age').choose(groovy, choices).values('name');
+    chosen.toArray()
+      .then(function (actual) {
+        var expected = ['marko', 'ripple', 'lop'];
+        assert.deepEqual(actual.sort(), expected.sort());
+      })
+      .done(done);
+  });
+
   // TODO
   // TraversalWrapper.prototype.idEdge = function () {
   // TraversalWrapper.prototype.id = function () {
@@ -1008,11 +1064,17 @@ suite('traversal-wrapper', function () {
     engine.addImportsSync(imports);
   }
 
-  // Extend a traversal by adding a 'map' step that uses a Groovy function to transform the traverser.
-  function mapTraversal(traversal, groovy) {
+  // Create a Groovy Function (GFunction)
+  function makeGroovyFunction(groovy) {
     var GFunction = java.import('com.tinkerpop.gremlin.groovy.function.GFunction');
     var closure = gremlin.getEngine().evalSync(groovy);
     var gfunction = new GFunction(closure);
+    return gfunction;
+  }
+
+  // Extend a traversal by adding a 'map' step that uses a Groovy function to transform the traverser.
+  function mapTraversal(traversal, groovy) {
+    var gfunction = makeGroovyFunction(groovy);
     var unwrapped = traversal.unwrap();
     var mappedTraversal = gremlin.wrapTraversal(unwrapped.mapSync(gfunction));
     return mappedTraversal;
