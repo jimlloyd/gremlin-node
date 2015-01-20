@@ -103,8 +103,8 @@ suite('traversal-wrapper', function () {
 
   test('g.V().iterate() promise', function (done) {
     dlog('creating traversal');
-    var trav = g.V().as('loop').both().jump('loop', 100);
-    dlog('created traversal up to jump 100');
+    var trav = g.V();
+    dlog('created traversal for all vertices');
     var promise = trav.iterate();
     dlog('created promise for traversal.iterate()');
     assert.ok(Q.isPromise(promise));
@@ -615,34 +615,6 @@ suite('traversal-wrapper', function () {
   // TraversalWrapper.prototype.exhaustMerge = function () {
   // TraversalWrapper.prototype.fairMerge = function () {
   // TraversalWrapper.prototype.ifThenElse = function () {
-
-  test('jump() #1: g.v(1).as(\'a\').out().jump(\'a\'){it.loops()<2}.values(\'name\')', function (done) {
-    var traversal = g.V().has(gremlin.T.id, 1).as('a').out().jump('a', '{it -> it.loops()<2}').values('name');
-    traversal.toArray(function (err, names) {
-      assert.ifError(err);
-      assert.deepEqual(names, ['ripple', 'lop']);
-      done();
-    });
-  });
-
-  test('jump() #2: g.v(1).as(\'a\').jump(\'b\'){it.loops()>1}.out().jump(\'a\').as(\'b\').values(\'name\')', function (done) {
-    var traversal =
-      g.V().has(gremlin.T.id, 1).as('a').jump('b', '{it -> it.loops()>1}').out().jump('a').as('b').values('name');
-    traversal.toArray(function (err, names) {
-      assert.ifError(err);
-      assert.deepEqual(names, ['ripple', 'lop']);
-      done();
-    });
-  });
-
-  test('jump() #3: g.v(1).jump(\'a\').out().out().out().as(\'a\').values(\'name\')', function (done) {
-    var traversal = g.V().has(gremlin.T.id, 1).jump('a').out().out().out().as('a').values('name');
-    traversal.toArray(function (err, names) {
-      assert.ifError(err);
-      assert.deepEqual(names, ['marko']);
-      done();
-    });
-  });
 
   // TraversalWrapper.prototype.and = function (/*final Traversal<E, ?>... traversals*/) {
   test('as() and back()', function (done) {
