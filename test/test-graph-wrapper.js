@@ -219,22 +219,26 @@ suite('graph-wrapper', function () {
         assert.ifError(err);
 
         g.getEdge(7)
+          .then(function (edge) {
+            done(new Error('should have thrown'));
+          })
           .catch(function (err) {
             assert.ok(err.toString().match(/The edge with id 7 of type Integer does not exist in the graph/));
             done();
-          })
-          .done(new Error('should have thrown'));
+          });
       });
     });
   });
 
   test('removeEdge(e) using promise API', function (done) {
     g.getEdge(7)
-      .then(function (e) {assert(e instanceof EdgeWrapper); return e.remove(); }, assert.ifError)
-      .then(function () { return g.getEdge(7); }, assert.ifError)
-      .then(function (e) { assert(!e); }, assert.ifError)
-      .catch(function (err) { assert.ok(err.toString().match(/The edge with id 7 of type Integer does not exist/)); })
-      .done(done);
+      .then(function (e) {assert(e instanceof EdgeWrapper); return e.remove(); })
+      .then(function () { return g.getEdge(7); })
+      .then(function (e) { done(new Error('should have thrown')); })
+      .catch(function (err) {
+        assert.ok(err.toString().match(/The edge with id 7 of type Integer does not exist/));
+        done();
+      });
   });
 
   test('setProperty(key, value) / value(key) using callback API', function (done) {
