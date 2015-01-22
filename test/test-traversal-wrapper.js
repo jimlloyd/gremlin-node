@@ -51,21 +51,20 @@ suite('traversal-wrapper', function () {
   test('Confirm Traversal API', function (done) {
     var expected = [
       // This is an index of the GraphTraversal API we implement.
-      // See http://www.tinkerpop.com/javadocs/3.0.0.M6/full/com/tinkerpop/gremlin/process/graph/GraphTraversal.html
+      // See http://www.tinkerpop.com/javadocs/3.0.0.M7/full/com/tinkerpop/gremlin/process/graph/GraphTraversal.html
       // This test will fail only if TinkerPop changes the api of 'com.tinkerpop.gremlin.process.graph.GraphTraversal'
-      'addBothE', 'addE', 'addInE', 'addOutE', 'addStart', 'addStarts', 'addStep', 'aggregate',
-      'applyStrategies', 'as', 'back', 'both', 'bothE', 'bothV', 'cap', 'choose', 'clone', 'count',
-      'cyclicPath', 'dedup', 'equals', 'except', 'fill', 'filter', 'flatMap', 'fold',
-      'forEachRemaining', 'getClass', 'getSteps', 'groupBy', 'groupCount', 'has', 'hasNext',
-      'hasNot', 'hashCode', 'hiddenMap', 'hiddenValueMap', 'hiddenValues', 'hiddens', 'id',
-      'identity', 'in', 'inE', 'inV', 'inject', 'interval', 'isLocked', 'iterate', 'jump', 'key',
-      'label', 'limit', 'localLimit', 'localRange', 'map', 'match', 'next', 'notify', 'notifyAll',
-      'order', 'orderBy', 'otherV', 'out', 'outE', 'outV', 'path', 'profile', 'properties',
-      'propertyMap', 'random', 'range', 'remove', 'reset', 'retain', 'reverse', 'sack', 'select',
-      'shuffle', 'sideEffect', 'sideEffects', 'simplePath', 'store', 'subgraph', 'submit', 'sum',
-      'timeLimit', 'to', 'toE', 'toList', 'toSet', 'toString', 'toV', 'tree', 'unfold', 'union',
-      'until', 'value', 'valueMap', 'values', 'wait', 'where', 'withPath', 'withSack',
-      'withSideEffect'
+      'addBothE', 'addE', 'addInE', 'addOutE', 'addStart', 'addStarts', 'addStep', 'aggregate', 'applyStrategies',
+      'as', 'asAdmin', 'back', 'between', 'both', 'bothE', 'bothV', 'branch', 'by', 'cap', 'choose', 'clone', 'coin',
+      'count', 'cyclicPath', 'dedup', 'emit', 'equals', 'except', 'fill', 'filter', 'flatMap', 'fold',
+      'forEachRemaining', 'getClass', 'getSideEffects', 'getSteps', 'getStrategies', 'getTraversalEngine',
+      'getTraversalHolder', 'getTraverserGenerator', 'group', 'groupCount', 'has', 'hasNext', 'hasNot', 'hashCode',
+      'id', 'identity', 'in', 'inE', 'inV', 'inject', 'iterate', 'key', 'label', 'limit', 'local', 'map', 'match',
+      'next', 'notify', 'notifyAll', 'order', 'otherV', 'out', 'outE', 'outV', 'path', 'profile', 'properties',
+      'propertyMap', 'range', 'remove', 'removeStep', 'repeat', 'reset', 'retain', 'reverse', 'sack', 'sample',
+      'select', 'setSideEffects', 'setStrategies', 'setTraversalHolder', 'shuffle', 'sideEffect', 'simplePath',
+      'store', 'subgraph', 'submit', 'sum', 'timeLimit', 'times', 'to', 'toBulkSet', 'toE', 'toList', 'toSet',
+      'toString', 'toV', 'tree', 'tryNext', 'unfold', 'union', 'until', 'value', 'valueMap', 'values', 'wait', 'where',
+      'withPath', 'withSack', 'withSideEffect'
     ];
     var javaTraversal = g.V().unwrap();
     assert.ok(gremlin.isType(javaTraversal, 'com.tinkerpop.gremlin.process.graph.GraphTraversal'));
@@ -104,8 +103,8 @@ suite('traversal-wrapper', function () {
 
   test('g.V().iterate() promise', function (done) {
     dlog('creating traversal');
-    var trav = g.V().as('loop').both().jump('loop', 100);
-    dlog('created traversal up to jump 100');
+    var trav = g.V();
+    dlog('created traversal for all vertices');
     var promise = trav.iterate();
     dlog('created promise for traversal.iterate()');
     assert.ok(Q.isPromise(promise));
@@ -448,11 +447,11 @@ suite('traversal-wrapper', function () {
   //   });
   // });
 
-  test('interval(string key, object start, object end)', function (done) {
+  test('between(string key, object start, object end)', function (done) {
     var lower = 0.3;
     var upper = 0.9;
 
-    var traversal = g.E().interval('weight', java.newFloat(lower), java.newFloat(upper));
+    var traversal = g.E().between('weight', java.newFloat(lower), java.newFloat(upper));
     traversal.toArray()
       .then(function (a) {
         assert(_.isArray(a));
@@ -617,34 +616,6 @@ suite('traversal-wrapper', function () {
   // TraversalWrapper.prototype.fairMerge = function () {
   // TraversalWrapper.prototype.ifThenElse = function () {
 
-  test('jump() #1: g.v(1).as(\'a\').out().jump(\'a\'){it.loops()<2}.values(\'name\')', function (done) {
-    var traversal = g.V().has(gremlin.T.id, 1).as('a').out().jump('a', '{it -> it.loops()<2}').values('name');
-    traversal.toArray(function (err, names) {
-      assert.ifError(err);
-      assert.deepEqual(names, ['ripple', 'lop']);
-      done();
-    });
-  });
-
-  test('jump() #2: g.v(1).as(\'a\').jump(\'b\'){it.loops()>1}.out().jump(\'a\').as(\'b\').values(\'name\')', function (done) {
-    var traversal =
-      g.V().has(gremlin.T.id, 1).as('a').jump('b', '{it -> it.loops()>1}').out().jump('a').as('b').values('name');
-    traversal.toArray(function (err, names) {
-      assert.ifError(err);
-      assert.deepEqual(names, ['ripple', 'lop']);
-      done();
-    });
-  });
-
-  test('jump() #3: g.v(1).jump(\'a\').out().out().out().as(\'a\').values(\'name\')', function (done) {
-    var traversal = g.V().has(gremlin.T.id, 1).jump('a').out().out().out().as('a').values('name');
-    traversal.toArray(function (err, names) {
-      assert.ifError(err);
-      assert.deepEqual(names, ['marko']);
-      done();
-    });
-  });
-
   // TraversalWrapper.prototype.and = function (/*final Traversal<E, ?>... traversals*/) {
   test('as() and back()', function (done) {
     g.V().as('test').out('knows').back('test').toArray(function (err, recs) {
@@ -661,9 +632,8 @@ suite('traversal-wrapper', function () {
 
   test('filter(predicate)', function (done) {
     this.timeout(5000); // A longer timeout is required on Travis
-    var GPredicate = java.import('com.tinkerpop.gremlin.groovy.function.GPredicate');
     var closure = gremlin.getEngine().evalSync('{ it -> it.get().value("name") == "lop" }');
-    var predicate = new GPredicate(closure);
+    var predicate = new gremlin.GroovyPredicate(closure);
     g.V().filter(predicate).toArray(function (err, recs) {
       assert.ifError(err);
       assert.strictEqual(recs.length, 1);
@@ -815,11 +785,22 @@ suite('traversal-wrapper', function () {
   // TraversalWrapper.prototype.scatter = function () {
   // TraversalWrapper.prototype.shuffle = function () {
 
-  test('select() with labels only', function (done) {
+  test('select() with a single label', function (done) {
     var results = g.E().as('e')
       .inV().id().as('inV')
       .back('e').outV().id().as('outV')
-      .select(['inV', 'outV'])
+      .select('inV')
+      .asJSONSync();
+    var expected = [2, 4, 3, 5, 3, 3];
+    assert.deepEqual(results, expected);
+    done();
+  });
+
+  test('select() with multiple labels', function (done) {
+    var results = g.E().as('e')
+      .inV().id().as('inV')
+      .back('e').outV().id().as('outV')
+      .select('inV', 'outV')
       .asJSONSync();
     var expected = [
       { inV: 2, outV: 1 },
@@ -828,61 +809,6 @@ suite('traversal-wrapper', function () {
       { inV: 5, outV: 4 },
       { inV: 3, outV: 4 },
       { inV: 3, outV: 6 }
-    ];
-    assert.deepEqual(results, expected);
-    done();
-  });
-
-  test('select() with labels and functions', function (done) {
-    var results = g.E().as('e')
-      .inV().id().as('inV')
-      .back('e').outV().id().as('outV')
-      .select(['inV', 'outV'], ['{it -> it+1000}', '{it -> it+2000}'])
-      .asJSONSync();
-    var expected = [
-      { inV: 1002, outV: 2001 },
-      { inV: 1004, outV: 2001 },
-      { inV: 1003, outV: 2001 },
-      { inV: 1005, outV: 2004 },
-      { inV: 1003, outV: 2004 },
-      { inV: 1003, outV: 2006 }
-    ];
-    assert.deepEqual(results, expected);
-    done();
-  });
-
-  test('select() with labels and not enough functions', function (done) {
-    var results = g.E().as('e')
-      .inV().id().as('inV')
-      .back('e').outV().id().as('outV')
-      .select(['inV', 'outV'], ['{it -> it+1000}'])
-      .asJSONSync();
-    var expected = [
-      { inV: 1002, outV: 1001 },
-      { inV: 1004, outV: 1001 },
-      { inV: 1003, outV: 1001 },
-      { inV: 1005, outV: 1004 },
-      { inV: 1003, outV: 1004 },
-      { inV: 1003, outV: 1006 }
-    ];
-    assert.deepEqual(results, expected);
-    done();
-  });
-
-  test('select() with only functions', function (done) {
-    var results = g.V().as('a').out('created').in('created').as('b').select([], ['{it -> it.value("name")}'])
-      .asJSONSync();
-    var expected = [
-      { a: 'marko', b: 'marko' },
-      { a: 'marko', b: 'josh' },
-      { a: 'marko', b: 'peter' },
-      { a: 'josh', b: 'josh' },
-      { a: 'josh', b: 'marko' },
-      { a: 'josh', b: 'josh' },
-      { a: 'josh', b: 'peter' },
-      { a: 'peter', b: 'marko' },
-      { a: 'peter', b: 'josh' },
-      { a: 'peter', b: 'peter' }
     ];
     assert.deepEqual(results, expected);
     done();
@@ -1079,7 +1005,7 @@ suite('traversal-wrapper', function () {
         .values('name').as('joshName')
         .back('josh').out()
         .values('name').as('outName')
-        .select(['joshName', 'outName']);
+        .select('joshName', 'outName');
     var actual = traversal.asJSONSync();
     var expected = [
       { joshName: 'josh', outName: 'ripple' },

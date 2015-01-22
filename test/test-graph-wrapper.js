@@ -10,6 +10,7 @@ var Gremlin = require('../lib/gremlin');
 var GraphWrapper = require('../lib/graph-wrapper');
 var VertexWrapper = require('../lib/vertex-wrapper');
 var EdgeWrapper = require('../lib/edge-wrapper');
+var TraversalWrapper = require('../lib/traversal-wrapper');
 
 Q.longStackSupport = true;
 
@@ -219,22 +220,26 @@ suite('graph-wrapper', function () {
         assert.ifError(err);
 
         g.getEdge(7)
+          .then(function (edge) {
+            done(new Error('should have thrown'));
+          })
           .catch(function (err) {
             assert.ok(err.toString().match(/The edge with id 7 of type Integer does not exist in the graph/));
             done();
-          })
-          .done(new Error('should have thrown'));
+          });
       });
     });
   });
 
   test('removeEdge(e) using promise API', function (done) {
     g.getEdge(7)
-      .then(function (e) {assert(e instanceof EdgeWrapper); return e.remove(); }, assert.ifError)
-      .then(function () { return g.getEdge(7); }, assert.ifError)
-      .then(function (e) { assert(!e); }, assert.ifError)
-      .catch(function (err) { assert.ok(err.toString().match(/The edge with id 7 of type Integer does not exist/)); })
-      .done(done);
+      .then(function (e) {assert(e instanceof EdgeWrapper); return e.remove(); })
+      .then(function () { return g.getEdge(7); })
+      .then(function (e) { done(new Error('should have thrown')); })
+      .catch(function (err) {
+        assert.ok(err.toString().match(/The edge with id 7 of type Integer does not exist/));
+        done();
+      });
   });
 
   test('setProperty(key, value) / value(key) using callback API', function (done) {
@@ -355,29 +360,104 @@ suite('graph-wrapper', function () {
       .done(done);
   });
 
-  // graph.v() in TK2 was a pipeline. In TK3 it is an accessor returning a single vertex.
-  test('v(id) using callback API', function (done) {
-    g.v(2, function (err, v) {
-      assert.ifError(err);
-      assert(v instanceof VertexWrapper);
-      assert.strictEqual(v.toStringSync(), 'v[2]');
-      done();
-    });
-  });
-
-  test('v(id) using promise API', function (done) {
-    g.v(2)
-      .then(function (v) {
+  test('V(2)', function (done) {
+    var traversal = g.V(2);
+    assert(traversal instanceof TraversalWrapper);
+    traversal.toArray()
+      .then(function (arr) {
+        assert(_.isArray(arr));
+        assert.strictEqual(arr.length, 1);
+        var v = arr[0];
         assert(v instanceof VertexWrapper);
         assert.strictEqual(v.toStringSync(), 'v[2]');
-      }, assert.ifError)
-      .done(done);
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
   });
 
-  test('v(id) with invalid id using promise API', function (done) {
-    g.v(99)
-      .then(function (v) { assert.strictEqual(v, undefined); }, assert.ifError)
-      .done(done);
+  test('V(2, 3)', function (done) {
+    var traversal = g.V(2, 3);
+    assert(traversal instanceof TraversalWrapper);
+    traversal.toArray()
+      .then(function (arr) {
+        assert(_.isArray(arr));
+        assert.strictEqual(arr.length, 2);
+        var expected = ['v[2]', 'v[3]'];
+        var actual = arr.map(function (v) {
+          assert(v instanceof VertexWrapper);
+          return v.toStringSync();
+        });
+        assert.deepEqual(expected.sort(), actual.sort());
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+  });
+
+  test('V(id) with invalid ID', function (done) {
+    var traversal = g.V(99);
+    assert(traversal instanceof TraversalWrapper);
+    traversal.toArray()
+      .then(function (arr) {
+        assert.deepEqual([], arr);
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+  });
+
+  test('E(7)', function (done) {
+    var traversal = g.E(7);
+    assert(traversal instanceof TraversalWrapper);
+    traversal.toArray()
+      .then(function (arr) {
+        assert(_.isArray(arr));
+        assert.strictEqual(arr.length, 1);
+        var e = arr[0];
+        assert(e instanceof EdgeWrapper);
+        assert.strictEqual(e.toStringSync(), 'e[7][1-knows->2]');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+  });
+
+  test('E(7, 8)', function (done) {
+    var traversal = g.E(7, 8);
+    assert(traversal instanceof TraversalWrapper);
+    traversal.toArray()
+      .then(function (arr) {
+        assert(_.isArray(arr));
+        assert.strictEqual(arr.length, 2);
+        var expected = ['e[7][1-knows->2]', 'e[8][1-knows->4]'];
+        var actual = arr.map(function (e) {
+          assert(e instanceof EdgeWrapper);
+          return e.toStringSync();
+        });
+        assert.deepEqual(expected.sort(), actual.sort());
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+  });
+
+  test('E(id) with invalid ID', function (done) {
+    var traversal = g.E(99);
+    assert(traversal instanceof TraversalWrapper);
+    traversal.toArray()
+      .then(function (arr) {
+        assert.deepEqual([], arr);
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
   });
 
   test('g.toString() using callback API', function (done) {
