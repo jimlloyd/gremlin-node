@@ -632,9 +632,8 @@ suite('traversal-wrapper', function () {
 
   test('filter(predicate)', function (done) {
     this.timeout(5000); // A longer timeout is required on Travis
-    var GPredicate = java.import('com.tinkerpop.gremlin.groovy.function.GPredicate');
     var closure = gremlin.getEngine().evalSync('{ it -> it.get().value("name") == "lop" }');
-    var predicate = new GPredicate(closure);
+    var predicate = new gremlin.GroovyPredicate(closure);
     g.V().filter(predicate).toArray(function (err, recs) {
       assert.ifError(err);
       assert.strictEqual(recs.length, 1);
