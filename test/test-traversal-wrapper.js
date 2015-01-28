@@ -630,11 +630,34 @@ suite('traversal-wrapper', function () {
 
   // TraversalWrapper.prototype.except = function () {
 
-  test('filter(predicate)', function (done) {
+  test('filter() with Groovy closure', function (done) {
     this.timeout(5000); // A longer timeout is required on Travis
-    var closure = gremlin.getEngine().evalSync('{ it -> it.get().value("name") == "lop" }');
-    var predicate = new gremlin.GroovyPredicate(closure);
-    g.V().filter(predicate).toArray(function (err, recs) {
+    var groovy = '{ it -> it.get().value("name") == "lop" }';
+    g.V().filter(groovy).toArray(function (err, recs) {
+      assert.ifError(err);
+      assert.strictEqual(recs.length, 1);
+      var v = recs[0];
+      assert.ok(v instanceof VertexWrapper);
+      var jsonObj = v.toJSON();
+      jsonObj = VertexWrapper.simplifyVertexProperties(jsonObj);
+      var expected = {
+        id: 3,
+        label: 'vertex',
+        type: 'vertex',
+        properties:
+         { name: 'lop',
+           lang: 'java' }
+      };
+      assert.deepEqual(jsonObj, expected);
+      done();
+    });
+  });
+
+  test('filter() with JavaScript lambda', function (done) {
+    this.timeout(5000); // A longer timeout is required on Travis
+    var js = 'a.get().value("name") == "lop"';
+    var lambda = gremlin.newJavaScriptLambda(js);
+    g.V().filter(lambda).toArray(function (err, recs) {
       assert.ifError(err);
       assert.strictEqual(recs.length, 1);
       var v = recs[0];
@@ -957,8 +980,18 @@ suite('traversal-wrapper', function () {
     .done(done);
   });
 
-  test('subgraph()', function (done) {
+  test('subgraph() with Groovy closure', function (done) {
     g.E().subgraph('{ it -> it.label() == "knows" }')
+      .then(function (sg) {
+        assert.ok(sg instanceof GraphWrapper);
+        assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
+      })
+      .done(done);
+  });
+
+  test('subgraph() with JavaScript lambda', function (done) {
+    var lambda = gremlin.newJavaScriptLambda('a.label() === "knows"');
+    g.E().subgraph(lambda)
       .then(function (sg) {
         assert.ok(sg instanceof GraphWrapper);
         assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');

@@ -62,4 +62,17 @@ suite('gremlin', function () {
     .done(done);
   });
 
+  test('newGroovyLambda', function () {
+    var lambda = gremlin.newGroovyLambda('{ a -> a < 100 }');
+    assert.equal(lambda.applySync(0), true);
+    assert.equal(lambda.applySync(99), true);
+    assert.equal(lambda.applySync(100), false);
+  });
+
+  test('newJavaScriptLambda', function () {
+    var lambda = gremlin.newJavaScriptLambda(
+      'a.split(",").map(function (x) { return (Number(x) < 100).toString(); }).join(", ")');
+    assert.equal(lambda.applySync('0, 99, 100'), 'true, true, false');
+  });
+
 });
