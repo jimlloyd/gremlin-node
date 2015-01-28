@@ -62,4 +62,11 @@ suite('gremlin', function () {
     .done(done);
   });
 
+  test('newGroovyLambda', function () {
+    var lambda = gremlin.newGroovyLambda('{ a -> a < 100 }');
+    assert.equal(lambda.applySync(0), true);
+    assert.equal(lambda.applySync(99), true);
+    assert.equal(lambda.applySync(100), false);
+  });
+
 });

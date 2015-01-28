@@ -630,11 +630,10 @@ suite('traversal-wrapper', function () {
 
   // TraversalWrapper.prototype.except = function () {
 
-  test('filter(predicate)', function (done) {
+  test('filter() with Groovy closure', function (done) {
     this.timeout(5000); // A longer timeout is required on Travis
-    var closure = gremlin.getEngine().evalSync('{ it -> it.get().value("name") == "lop" }');
-    var predicate = new gremlin.GroovyPredicate(closure);
-    g.V().filter(predicate).toArray(function (err, recs) {
+    var groovy = '{ it -> it.get().value("name") == "lop" }';
+    g.V().filter(groovy).toArray(function (err, recs) {
       assert.ifError(err);
       assert.strictEqual(recs.length, 1);
       var v = recs[0];
@@ -957,7 +956,7 @@ suite('traversal-wrapper', function () {
     .done(done);
   });
 
-  test('subgraph()', function (done) {
+  test('subgraph() with Groovy closure', function (done) {
     g.E().subgraph('{ it -> it.label() == "knows" }')
       .then(function (sg) {
         assert.ok(sg instanceof GraphWrapper);
