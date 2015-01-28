@@ -653,6 +653,30 @@ suite('traversal-wrapper', function () {
     });
   });
 
+  test('filter() with JavaScript lambda', function (done) {
+    this.timeout(5000); // A longer timeout is required on Travis
+    var js = 'a.get().value("name") == "lop"';
+    var lambda = gremlin.newJavaScriptLambda(js);
+    g.V().filter(lambda).toArray(function (err, recs) {
+      assert.ifError(err);
+      assert.strictEqual(recs.length, 1);
+      var v = recs[0];
+      assert.ok(v instanceof VertexWrapper);
+      var jsonObj = v.toJSON();
+      jsonObj = VertexWrapper.simplifyVertexProperties(jsonObj);
+      var expected = {
+        id: 3,
+        label: 'vertex',
+        type: 'vertex',
+        properties:
+         { name: 'lop',
+           lang: 'java' }
+      };
+      assert.deepEqual(jsonObj, expected);
+      done();
+    });
+  });
+
   // TraversalWrapper.prototype.or = function (/*final Traversal<E, ?>... traversals*/) {
   // TraversalWrapper.prototype.random = function () {
   // TraversalWrapper.prototype.index = function (idx) {
@@ -958,6 +982,16 @@ suite('traversal-wrapper', function () {
 
   test('subgraph() with Groovy closure', function (done) {
     g.E().subgraph('{ it -> it.label() == "knows" }')
+      .then(function (sg) {
+        assert.ok(sg instanceof GraphWrapper);
+        assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
+      })
+      .done(done);
+  });
+
+  test('subgraph() with JavaScript lambda', function (done) {
+    var lambda = gremlin.newJavaScriptLambda('a.label() === "knows"');
+    g.E().subgraph(lambda)
       .then(function (sg) {
         assert.ok(sg instanceof GraphWrapper);
         assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
