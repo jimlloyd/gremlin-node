@@ -457,15 +457,14 @@ suite('traversal-wrapper', function () {
         assert(_.isArray(a));
         assert.strictEqual(a.length, 3);
         var p = a.map(function (e) { return e.value('weight'); });
-        Q.all(p)
-          .then(function (weights) {
-            weights.map(function (w) {
-              assert(w >= lower && w <= upper);
-            });
-          })
-          .done(done);
+        return Q.all(p);
       })
-      .done();
+      .then(function (weights) {
+        weights.map(function (w) {
+          assert(w >= lower && w <= upper);
+        });
+      })
+      .done(done);
   });
 
   test('bothE(string... labels)', function (done) {
@@ -893,8 +892,8 @@ suite('traversal-wrapper', function () {
           properties: { answer: 42, foo: 'bar' } }
         ];
         assert.deepEqual(edges, expected);
-        done();
-      });
+      })
+      .done(done);
   });
 
   test('addE(in)', function (done) {
@@ -920,8 +919,8 @@ suite('traversal-wrapper', function () {
           properties: { answer: 42, foo: 'bar' } }
         ];
         assert.deepEqual(edges, expected);
-        done();
-      });
+      })
+      .done(done);
   });
 
   test('addOutE()', function (done) {
@@ -946,26 +945,26 @@ suite('traversal-wrapper', function () {
           properties: { answer: 42, foo: 'bar' } }
         ];
         assert.deepEqual(edges, expected);
-        done();
-      });
+      })
+      .done(done);
   });
 
   test('addBothE()', function (done) {
     g.V().has(gremlin.T.id, 1).as('knower').out('knows').out('created').addBothE('knows<->creator', 'knower', testProps).iterate()
       .then(function () {
-        g.E().has(gremlin.T.label, 'knows<->creator').toArray(function (err, edges) {
-          assert.ifError(err);
-          var estrs = edgesMapToStrings(edges);
-          var expected = [
-            'e[12][1-knows<->creator->5]',
-            'e[13][5-knows<->creator->1]',
-            'e[14][1-knows<->creator->3]',
-            'e[15][3-knows<->creator->1]'
-          ];
-          assert.deepEqual(estrs, expected);
-          done();
-        });
-      });
+        return g.E().has(gremlin.T.label, 'knows<->creator').toArray();
+      })
+      .then(function (edges) {
+        var estrs = edgesMapToStrings(edges);
+        var expected = [
+          'e[12][1-knows<->creator->5]',
+          'e[13][5-knows<->creator->1]',
+          'e[14][1-knows<->creator->3]',
+          'e[15][3-knows<->creator->1]'
+        ];
+        assert.deepEqual(estrs, expected);
+      })
+      .done(done);
   });
 
   test('forEach()', function (done) {

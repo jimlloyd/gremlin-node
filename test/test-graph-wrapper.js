@@ -160,10 +160,11 @@ suite('graph-wrapper', function () {
         v2 = v;
         assert(v2 instanceof VertexWrapper);
         return v1.addEdge('buddy', v2, {}, function (err, e) {
+          assert.ifError(err);
           assert(e instanceof EdgeWrapper);
-          return done(err);
         });
-      });
+      })
+      .done(done);
   });
 
   test('v.addEdge(label, v2) using promise API', function (done) {
@@ -370,11 +371,8 @@ suite('graph-wrapper', function () {
         var v = arr[0];
         assert(v instanceof VertexWrapper);
         assert.strictEqual(v.toStringSync(), 'v[2]');
-        done();
       })
-      .catch(function (err) {
-        done(err);
-      });
+      .done(done);
   });
 
   test('V(2, 3)', function (done) {
@@ -390,11 +388,8 @@ suite('graph-wrapper', function () {
           return v.toStringSync();
         });
         assert.deepEqual(expected.sort(), actual.sort());
-        done();
       })
-      .catch(function (err) {
-        done(err);
-      });
+      .done(done);
   });
 
   test('V(id) with invalid ID', function (done) {
@@ -403,11 +398,8 @@ suite('graph-wrapper', function () {
     traversal.toArray()
       .then(function (arr) {
         assert.deepEqual([], arr);
-        done();
       })
-      .catch(function (err) {
-        done(err);
-      });
+      .done(done);
   });
 
   test('E(7)', function (done) {
@@ -420,11 +412,8 @@ suite('graph-wrapper', function () {
         var e = arr[0];
         assert(e instanceof EdgeWrapper);
         assert.strictEqual(e.toStringSync(), 'e[7][1-knows->2]');
-        done();
       })
-      .catch(function (err) {
-        done(err);
-      });
+      .done(done);
   });
 
   test('E(7, 8)', function (done) {
@@ -440,11 +429,8 @@ suite('graph-wrapper', function () {
           return e.toStringSync();
         });
         assert.deepEqual(expected.sort(), actual.sort());
-        done();
       })
-      .catch(function (err) {
-        done(err);
-      });
+      .done(done);
   });
 
   test('E(id) with invalid ID', function (done) {
@@ -453,11 +439,8 @@ suite('graph-wrapper', function () {
     traversal.toArray()
       .then(function (arr) {
         assert.deepEqual([], arr);
-        done();
       })
-      .catch(function (err) {
-        done(err);
-      });
+      .done(done);
   });
 
   test('g.toString() using callback API', function (done) {
