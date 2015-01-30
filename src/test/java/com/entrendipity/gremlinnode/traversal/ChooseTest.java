@@ -19,6 +19,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests that demonstrate "choose" in ways that mirror the tests in test-traversal-wrapper.js.
+ */
 public class ChooseTest {
 
     private Graph graph;
@@ -28,6 +31,10 @@ public class ChooseTest {
         graph = TinkerFactory.createClassic();
     }
 
+    /**
+     * This test has a trivial predicate, i.e. one that always returns false.  On the false branch, it injects "bar",
+     * so that the overall traversal will see all vertices, plus the string "bar".
+     */
     @Test
     public void trivialChoosePredicateWorks() {
         final Traversal<Vertex, String> traversal =
@@ -58,6 +65,10 @@ public class ChooseTest {
         assertEquals(Long.valueOf(1), counts.get("peter"));
     }
 
+    /**
+     * Based on documentation example (1).
+     * http://www.tinkerpop.com/docs/3.0.0-SNAPSHOT/#choose-step
+     */
     @Test
     public void simpleChoosePredicateWorks() {
         final Traversal<Vertex, String> traversal =
@@ -83,6 +94,10 @@ public class ChooseTest {
         assertEquals(Long.valueOf(1), counts.get("peter"));
     }
 
+    /**
+     * Based on documentation example (2), but with M7 syntax.
+     * http://www.tinkerpop.com/docs/3.0.0-SNAPSHOT/#choose-step
+     */
     @Test
     public void simpleChooseFunctionWorks() {
         HashMap choices = new HashMap() {{
@@ -111,6 +126,10 @@ public class ChooseTest {
         assertEquals(Long.valueOf(1), counts.get("ripple"));
     }
 
+    /**
+     * Based on #simpleChooseFunctionWorks, but with a Groovy function to more closely mirror what we would do from
+     * JavaScript.
+     */
     @Test
     public void groovyChooseFunctionWorks() {
         HashMap choices = new HashMap() {{
