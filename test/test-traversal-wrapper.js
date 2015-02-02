@@ -860,6 +860,25 @@ suite('traversal-wrapper', function () {
     // TODO: Finish this.
   });
 
+  test('sack and withSack with scalar', function (done) {
+    g.V().withSack('{ -> 1.0f }').sack().toArray()
+      .then(function (actual) {
+        var expected = [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ];
+        assert.deepEqual(actual, expected);
+      })
+      .done(done);
+  });
+
+  test('sack and withSack with map', function (done) {
+    g.V().withSack('{ -> [:] }', '{ m -> m.clone() }').out().out()
+      .sack('{ m, v -> m[v.value("name")] = v.value("lang"); m }').sack().toArray()
+      .then(function (actual) {
+        var expected = [ { ripple: 'java' }, { lop: 'java' } ];
+        assert.deepEqual(actual, expected);
+      })
+      .done(done);
+  });
+
   // TraversalWrapper.prototype.scatter = function () {
   // TraversalWrapper.prototype.shuffle = function () {
 
