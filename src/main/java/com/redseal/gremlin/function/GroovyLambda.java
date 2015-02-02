@@ -1,13 +1,7 @@
 package com.entrendipity.gremlinnode.function;
 
 import com.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
-import com.tinkerpop.gremlin.util.function.TriConsumer;
 import groovy.lang.Closure;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -16,7 +10,7 @@ import javax.script.ScriptException;
  *
  * Based on code written by Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroovyLambda implements Function, Supplier, Consumer, Predicate, BiConsumer, TriConsumer {
+public class GroovyLambda extends AbstractGlobFunction {
 
     private final String groovy;
     private final ScriptEngine engine;
@@ -38,10 +32,20 @@ public class GroovyLambda implements Function, Supplier, Consumer, Predicate, Bi
         this.closure = (Closure) this.engine.eval(groovy);
     }
 
-    // Function.apply
+    public String toString() {
+        return "GroovyLambda(" + groovy + ")";
+    }
+
+    // Function.apply, UnaryOperator.apply
     @Override
     public Object apply(final Object a) {
         return this.closure.call(a);
+    }
+
+    // BiFunction.apply, BinaryOperator.apply
+    @Override
+    public Object apply(final Object a, final Object b) {
+        return this.closure.call(a, b);
     }
 
     // Supplier.get
@@ -72,5 +76,11 @@ public class GroovyLambda implements Function, Supplier, Consumer, Predicate, Bi
     @Override
     public boolean test(final Object a) {
         return (boolean) this.closure.call(a);
+    }
+
+    // BiPredicate.test
+    @Override
+    public boolean test(final Object a, final Object b) {
+        return (boolean) this.closure.call(a, b);
     }
 }
