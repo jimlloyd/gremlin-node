@@ -1,9 +1,11 @@
 package com.entrendipity.gremlinnode.function;
 
+import com.entrendipity.gremlinnode.testing.TestClass;
 import com.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import com.tinkerpop.gremlin.util.function.TriConsumer;
 import groovy.lang.Closure;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -19,6 +21,69 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class GroovyLambdaTest {
+
+    @Test
+    public void builtInImportsIncludesHashSet() {
+        // Groovy includes java.util.* by default. 
+        try {
+            final GroovyLambda lambda = new GroovyLambda("{ -> new HashSet() }");
+            assertTrue(lambda.get() instanceof HashSet);
+        }
+        catch (ScriptException se) {
+            assertTrue(se.toString(), false);
+        }
+    }
+
+    @Test
+    public void builtInImportsIncludesInet4Address() {
+        // Groovy includes java.net.* by default. 
+        try {
+            final GroovyLambda lambda = new GroovyLambda("{ x -> Inet4Address.getByName(x) }");
+            assertEquals(lambda.apply("127.0.0.1").toString(), "/127.0.0.1");
+        }
+        catch (ScriptException se) {
+            assertTrue(se.toString(), false);
+        }
+    }
+
+    @Test
+    public void builtInImports() {
+        // Gremlin adds some imports of its own.  Check a couple of things.
+        final Map<String, Set<String>> engineImports = newEngine().imports();
+        final Set<String> imports = engineImports.get("imports");
+        assertTrue(imports.contains("com.tinkerpop.gremlin.process.*"));
+        final Set<String> staticImports = engineImports.get("staticImports");
+        assertTrue(staticImports.contains("com.tinkerpop.gremlin.structure.Compare.*"));
+    }
+
+    @Test
+    public void applicationSpecificImports() {
+        final GremlinGroovyScriptEngine engine = newEngine();
+
+        // We're going to try to define a closure that references an application-specific datatype.
+        final String groovy = "{ -> new TestClass() }";
+
+        // First check that TestClass is not defined.
+        try {
+            new GroovyLambda(groovy);
+            assertTrue("Should have thrown something about TestClass not being defined!", false);
+        }
+        catch (ScriptException se) {
+            assertTrue(se.toString(), se.toString().contains("unable to resolve class TestClass"));
+        }
+
+        // Now define it, and try again.
+        final Set<String> imports = new HashSet<>();
+        imports.add("import com.entrendipity.gremlinnode.testing.TestClass");
+        engine.addImports(imports);
+        try {
+            final GroovyLambda lambda = new GroovyLambda(groovy, engine);
+            final TestClass testClass = (TestClass) lambda.get();
+        }
+        catch (ScriptException se) {
+            assertTrue(se.toString(), false);
+        }
+    }
 
     // Function.apply, UnaryOperator.apply
 
@@ -334,7 +399,7 @@ public class GroovyLambdaTest {
 
     // Utilities
 
-    private ScriptEngine newEngine() {
+    private GremlinGroovyScriptEngine newEngine() {
         return new GremlinGroovyScriptEngine();
     }
 }
