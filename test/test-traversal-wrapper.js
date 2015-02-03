@@ -77,6 +77,31 @@ suite('traversal-wrapper', function () {
     done();
   });
 
+  test('clone', function (done) {
+    var original = g.V();
+    var clone = original.clone();
+
+    // We can add steps to the traversal prior to execution.
+    var added = original.has('name');
+
+    // We should be able to iterate the original traversal.
+    original.toArray()
+      .then(function (results) {
+        assert.ok(results);
+
+        // If we try to extend the original traversal again, it's an error
+        assert.throws(function () { original.has('age'); },
+                      /IllegalStateException:.*traversal can no longer have steps added/);
+
+        // We should be able to extend and execute the clone.
+        return clone.has('age').toArray();
+      })
+      .then(function (results) {
+        assert.ok(results);
+      })
+      .done(done);
+  });
+
   test('g.V().has("name", "marko") -> v.value("name")', function (done) {
     g.V().has('name', 'marko').next(function (err, v) {
       v.value('name', function (err, value) {
