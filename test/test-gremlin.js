@@ -79,7 +79,7 @@ suite('gremlin', function () {
     // Now define it, and try again.
     gremlin.importGroovy('com.entrendipity.gremlinnode.testing.TestClass');
     var lambda = gremlin.newGroovyLambda(groovy);
-    assert.equal(lambda.getSync().toString(), "TestClass");
+    assert.equal(lambda.getSync().toString(), 'TestClass');
   });
 
   test('newJavaScriptLambda', function () {
