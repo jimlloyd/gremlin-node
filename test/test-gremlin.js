@@ -69,6 +69,19 @@ suite('gremlin', function () {
     assert.equal(lambda.applySync(100), false);
   });
 
+  test('importGroovy', function () {
+    // We're going to try to define a closure that references an application-specific datatype.
+    var groovy = '{ -> new TestClass() }';
+
+    // First check that TestClass is not defined.
+    assert.throws(function () { gremlin.newGroovyLambda(groovy); }, /unable to resolve class TestClass/);
+
+    // Now define it, and try again.
+    gremlin.importGroovy('com.entrendipity.gremlinnode.testing.TestClass');
+    var lambda = gremlin.newGroovyLambda(groovy);
+    assert.equal(lambda.getSync().toString(), 'TestClass');
+  });
+
   test('newJavaScriptLambda', function () {
     var lambda = gremlin.newJavaScriptLambda(
       'a.split(",").map(function (x) { return (Number(x) < 100).toString(); }).join(", ")');
