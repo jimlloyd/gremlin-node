@@ -519,8 +519,10 @@ suite('graph-wrapper', function () {
   test('g.saveAndLoadGraphSON() async promise', function () {
     var tmpName = Q.nfbind(tmp.tmpName);
     var h;
+    var path;
     return tmpName()
-      .then(function (path) {
+      .then(function (_path) {
+        path = _path;
         return g.saveGraphSON(path);
       })
       .then(function (graph) {
@@ -536,10 +538,11 @@ suite('graph-wrapper', function () {
       })
       .then(function (graph) {
         assert.strictEqual(h, graph, 'loadGraphSON did not return graph');
-        str = h.toStringSync();
-        expected = 'tinkergraph[vertices:6 edges:6]';
+        var str = h.toStringSync();
+        var expected = 'tinkergraph[vertices:6 edges:6]';
         assert.strictEqual(str, expected);
-        fs.unlink(path, done);
+        var unlink = Q.nfbind(fs.unlink);
+        return unlink(path);
       });
   });
 
