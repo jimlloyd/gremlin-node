@@ -596,7 +596,7 @@ suite('graph-wrapper', function () {
       });
   });
 
-  test.only('g.saveAndLoadGraphSON() pretty async promise', function () {
+  test('g.saveAndLoadGraphSON() pretty async promise', function () {
     var tmpName = Q.nfbind(tmp.tmpName);
     var h;
     var path;
