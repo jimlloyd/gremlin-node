@@ -466,7 +466,7 @@ suite('graph-wrapper', function () {
     done();
   });
 
-  test('g.saveAndLoadGraphSON()', function (done) {
+  test('g.saveAndLoadGraphSON() sync', function (done) {
     tmp.tmpName(function (err, path) {
       if (err) {
         // A failure in tmpName is not a failure in gremlin-node.
@@ -485,6 +485,62 @@ suite('graph-wrapper', function () {
       assert.strictEqual(str, expected);
       fs.unlink(path, done);
     });
+  });
+
+  test('g.saveAndLoadGraphSON() async callback', function (done) {
+    tmp.tmpName(function (err, path) {
+      if (err) {
+        // A failure in tmpName is not a failure in gremlin-node.
+        // If this ever fails, it is likely some environmental problem.
+        throw err;
+      }
+      g.saveGraphSON(path, function (err, graph) {
+        assert.ifError(err);
+        assert.strictEqual(g, graph, 'saveGraphSON did not return graph');
+        var tinker = gremlin.java.callStaticMethodSync(
+          'com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph', 'open');
+        var h = gremlin.wrap(tinker);
+        var str = h.toStringSync();
+        var expected = 'tinkergraph[vertices:0 edges:0]';
+        assert.strictEqual(str, expected);
+
+        h.loadGraphSON(path, function (err, graph) {
+          assert.ifError(err);
+          assert.strictEqual(h, graph, 'loadGraphSON did not return graph');
+          str = h.toStringSync();
+          expected = 'tinkergraph[vertices:6 edges:6]';
+          assert.strictEqual(str, expected);
+          fs.unlink(path, done);
+        });
+      });
+    });
+  });
+
+  test('g.saveAndLoadGraphSON() async promise', function () {
+    var tmpName = Q.nfbind(tmp.tmpName);
+    var h;
+    return tmpName()
+      .then(function (path) {
+        return g.saveGraphSON(path);
+      })
+      .then(function (graph) {
+        assert.strictEqual(g, graph, 'saveGraphSON did not return graph');
+        var tinker = gremlin.java.callStaticMethodSync(
+          'com.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph', 'open');
+        h = gremlin.wrap(tinker);
+        var str = h.toStringSync();
+        var expected = 'tinkergraph[vertices:0 edges:0]';
+        assert.strictEqual(str, expected);
+
+        return h.loadGraphSON(path);
+      })
+      .then(function (graph) {
+        assert.strictEqual(h, graph, 'loadGraphSON did not return graph');
+        str = h.toStringSync();
+        expected = 'tinkergraph[vertices:6 edges:6]';
+        assert.strictEqual(str, expected);
+        fs.unlink(path, done);
+      });
   });
 
 });
