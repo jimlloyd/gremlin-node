@@ -88,4 +88,12 @@ suite('gremlin', function () {
     assert.equal(lambda.applySync('0, 99, 100'), 'true, true, false');
   });
 
+  test('propertiesToVarArgs', function () {
+    var properties = { foo: 123, bar: 456, baz: 'one', quux: 'two' };
+    var actual = gremlin.propertiesToVarArgs(properties);
+    var expected = gremlin.java.newArray('java.lang.Object', ['bar', 456, 'baz', 'one', 'foo', 123, 'quux', 'two']);
+    var Arrays = gremlin.java.import('java.util.Arrays');
+    assert.equal(Arrays.equalsSync(actual, expected), true, Arrays.toStringSync(actual));
+  });
+
 });
