@@ -6,7 +6,7 @@ clean:
 	mvn clean
 
 package:
-	mvn clean package
+	mvn -DskipTests=true clean package
 
 lint:
 	node_modules/jshint/bin/jshint --verbose bin lib test
