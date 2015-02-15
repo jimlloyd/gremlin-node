@@ -898,16 +898,36 @@ suite('traversal-wrapper', function () {
       });
   });
 
-  test.skip('path with lambda: g.V().out().out().path{it.value(\'name\')}{it.value(\'age\')}', function (done) {
-    var traversal = g.V().out().out().path({ apply: function (it) { return it.value('name'); } },
-                                           { apply: function (it) { return it.value('age'); } });
-    traversal.toArray(function (err, paths) {
-      assert.ifError(err);
-      assert.ok(paths);
-      assert.ok(_.isArray(paths));
-      // TODO: Check the values when we can deal with a Path object in the result.
-      done();
-    });
+  test('path with by: g.V().out().out().path().by("name").by("age")', function () {
+    var traversal = g.V().out().out().path().by('name').by('age');
+    return traversal.toArray()
+      .then(extractObjectsFromPaths)
+      .then(function (actual) {
+        var expected = [
+          ['marko', 32, 'ripple'],
+          ['marko', 32, 'lop']
+        ];
+        assert.deepEqual(actual, expected);
+      });
+  });
+
+  test.skip('path with nested traversal', function () {
+    // TODO: This relies on by() accepting a Traversal, which is not in 3.0.0.M7
+    var __ = gremlin.__;
+    var traversal = g.V().out().out().path().by(
+      __.choose('{ it -> it.get().has("person") }',
+                __.out('created').values('name'),
+                __.in('created').values('name'))
+        .fold());
+    return traversal.toArray()
+      .then(extractObjectsFromPaths)
+      .then(function (actual) {
+        var expected = [
+          [['lop'], ['ripple', 'lop'], ['josh']]
+          [['lop'], ['ripple', 'lop'], ['marko', 'josh', 'peter']]
+        ];
+        assert.deepEqual(actual, expected);
+      });
   });
 
   test.skip('path with nested traversal', function (done) {
