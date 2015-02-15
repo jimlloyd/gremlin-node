@@ -923,8 +923,11 @@ suite('traversal-wrapper', function () {
       .then(extractObjectsFromPaths)
       .then(function (actual) {
         var expected = [
+          // The following nested array sends jshint into a tizzy, and yet I find it aesthetically pleasing.
+          /* jshint ignore:start */
           [['lop'], ['ripple', 'lop'], ['josh']]
           [['lop'], ['ripple', 'lop'], ['marko', 'josh', 'peter']]
+          /* jshint ignore:end */
         ];
         assert.deepEqual(actual, expected);
       });
