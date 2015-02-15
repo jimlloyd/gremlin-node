@@ -930,14 +930,75 @@ suite('traversal-wrapper', function () {
       });
   });
 
-  test.skip('path with nested traversal', function (done) {
-    // The Gremlin looks like this:
-    // g.V().out().out().path{
-    //   it.choose({it.get().has('age').hasNext()},
-    //             g.of().out('created').values('name'),
-    //             g.of().in('created').values('name')).toList()}
-    // TODO: What to do with it.choose?
-    // TODO: Finish this.
+  // Transform an array of arrays of vertices into an array of arrays of names.  Returns promise to array of arrays of
+  // names (strings).
+  function extractNamesFromPaths(vertexPathArray) {
+    return extractObjectsFromPaths(vertexPathArray)
+      .then(function (vertexObjectsArray) {
+        // Make sure we have an array of arrays of vertices, and extract the 'name' attribute from each.
+        assert(_.isArray(vertexObjectsArray));
+        var nameObjectsArray = vertexObjectsArray.map(function (vertexObjects) {
+          assert(_.isArray(vertexObjects), vertexObjects);
+          return vertexObjects.map(function (vertex) {
+            assert(vertex instanceof VertexWrapper, vertex);
+            return vertex.valueSync('name');
+          });
+        });
+        return nameObjectsArray;
+      });
+  }
+
+  test('repeat/times', function () {
+    var __ = gremlin.__;
+    // TODO: We would like to add by('name') on the end, but 3.0.0.M7 does not support this, so we use extractNamesFromPaths.
+    var traversal = g.V(1).repeat(__.out()).times(2).path();
+    return traversal.toArray()
+      .then(function (vertexPathArray) {
+        return extractNamesFromPaths(vertexPathArray);
+      })
+      .then(function (actual) {
+        var expected = [
+          ['marko', 'josh', 'ripple'],
+          ['marko', 'josh', 'lop'],
+        ];
+        assert.deepEqual(actual, expected);
+      });
+  });
+
+  test('repeat/until(Traversal)', function () {
+    var __ = gremlin.__;
+    // TODO: We would like to add by('name') on the end, but 3.0.0.M7 does not support this, so we use extractNamesFromPaths.
+    var traversal = g.V().until(__.has('name', 'ripple')).repeat(__.out()).path();
+    return traversal.toArray()
+      .then(function (vertexPathArray) {
+        return extractNamesFromPaths(vertexPathArray);
+      })
+      .then(function (actual) {
+        var expected = [
+          ['marko', 'josh', 'ripple'],
+          ['josh', 'ripple'],
+          ['ripple'],
+        ];
+        assert.deepEqual(actual, expected);
+      });
+  });
+
+  test('repeat/until(Predicate)', function () {
+    var __ = gremlin.__;
+    // TODO: We would like to add by('name') on the end, but 3.0.0.M7 does not support this, so we use extractNamesFromPaths.
+    var traversal = g.V().until('{ it -> it.get().value("name") == "ripple" }').repeat(__.out()).path();
+    return traversal.toArray()
+      .then(function (vertexPathArray) {
+        return extractNamesFromPaths(vertexPathArray);
+      })
+      .then(function (actual) {
+        var expected = [
+          ['marko', 'josh', 'ripple'],
+          ['josh', 'ripple'],
+          ['ripple'],
+        ];
+        assert.deepEqual(actual, expected);
+      });
   });
 
   test('sack and withSack with scalar', function (done) {
