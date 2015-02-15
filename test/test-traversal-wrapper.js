@@ -9,6 +9,7 @@ var GraphWrapper = require('../lib/graph-wrapper');
 var TraversalWrapper = require('../lib/traversal-wrapper');
 var VertexWrapper = require('../lib/vertex-wrapper');
 var EdgeWrapper = require('../lib/edge-wrapper');
+var ElementWrapper = require('../lib/element-wrapper');
 
 var dlog = require('debug')('test:traversal');
 
@@ -843,46 +844,164 @@ suite('traversal-wrapper', function () {
   // TraversalWrapper.prototype.memoize = function () {
   // TraversalWrapper.prototype.order = function () {
 
-  test.skip('path simple: g.V().out().out().values(\'name\').path()', function (done) {
-    g.V().out().out().values('name').path().toArray(function (err, paths) {
-      assert.ifError(err);
-      assert.ok(paths);
-      assert.ok(_.isArray(paths));
-      // TODO: Check the values when we can deal with a Path object in the result.
-      done();
+  // Extract the objects arrays from each Path in an array of Paths.  Returns promise to array of arrays of objects.
+  function extractObjectsFromPaths(pathArray) {
+    assert(_.isArray(pathArray));
+    // Q.all() can be dangerous for operations that modify the database,
+    // but should be fine here since this is read-only.
+    return Q.all(pathArray.map(function (path) { return path.objects(); }));
+  }
+
+  // Convert any graph elements (vertices or edges) into strings in an array of arrays.
+  function elementsAsStrings(arrayOfArrays) {
+    assert(_.isArray(arrayOfArrays));
+    return arrayOfArrays.map(function (array) {
+      assert(_.isArray(array));
+      return array.map(function (elem) {
+        if (elem instanceof ElementWrapper) {
+          return elem.toStringSync();
+        } else {
+          assert(_.isString(elem));
+          return elem;
+        }
+      });
     });
+  }
+
+  test('path simple: g.V().out().out().values(\'name\').path()', function () {
+    return g.V().out().out().values('name').path().toArray()
+      .then(extractObjectsFromPaths)
+      .then(function (actual) {
+        var actualStrings = elementsAsStrings(actual);
+
+        var expectedStrings = [
+          ['v[1]', 'v[4]', 'v[5]', 'ripple'],
+          ['v[1]', 'v[4]', 'v[3]', 'lop'],
+        ];
+
+        assert.deepEqual(actualStrings, expectedStrings);
+      });
   });
 
-  test.skip('path with edges: g.V().outE().inV().outE().inV().path()', function (done) {
-    g.V().outE().inV().outE().inV().path().toArray(function (err, paths) {
-      assert.ifError(err);
-      assert.ok(paths);
-      assert.ok(_.isArray(paths));
-      // TODO: Check the values when we can deal with a Path object in the result.
-      done();
-    });
+  test('path with edges: g.V().outE().inV().outE().inV().path()', function () {
+    return g.V().outE().inV().outE().inV().path().toArray()
+      .then(extractObjectsFromPaths)
+      .then(function (actual) {
+        var actualStrings = elementsAsStrings(actual);
+
+        var expectedStrings = [
+          [ 'v[1]', 'e[8][1-knows->4]', 'v[4]', 'e[10][4-created->5]', 'v[5]'],
+          [ 'v[1]', 'e[8][1-knows->4]', 'v[4]', 'e[11][4-created->3]', 'v[3]'],
+        ];
+
+        assert.deepEqual(actualStrings, expectedStrings);
+      });
   });
 
-  test.skip('path with lambda: g.V().out().out().path{it.value(\'name\')}{it.value(\'age\')}', function (done) {
-    var traversal = g.V().out().out().path({ apply: function (it) { return it.value('name'); } },
-                                           { apply: function (it) { return it.value('age'); } });
-    traversal.toArray(function (err, paths) {
-      assert.ifError(err);
-      assert.ok(paths);
-      assert.ok(_.isArray(paths));
-      // TODO: Check the values when we can deal with a Path object in the result.
-      done();
-    });
+  test('path with by: g.V().out().out().path().by("name").by("age")', function () {
+    var traversal = g.V().out().out().path().by('name').by('age');
+    return traversal.toArray()
+      .then(extractObjectsFromPaths)
+      .then(function (actual) {
+        var expected = [
+          ['marko', 32, 'ripple'],
+          ['marko', 32, 'lop']
+        ];
+        assert.deepEqual(actual, expected);
+      });
   });
 
-  test.skip('path with nested traversal', function (done) {
-    // The Gremlin looks like this:
-    // g.V().out().out().path{
-    //   it.choose({it.get().has('age').hasNext()},
-    //             g.of().out('created').values('name'),
-    //             g.of().in('created').values('name')).toList()}
-    // TODO: What to do with it.choose?
-    // TODO: Finish this.
+  test.skip('path with nested traversal', function () {
+    // TODO: This relies on by() accepting a Traversal, which is not in 3.0.0.M7
+    var __ = gremlin.__;
+    var traversal = g.V().out().out().path().by(
+      __.choose('{ it -> it.get().has("person") }',
+                __.out('created').values('name'),
+                __.in('created').values('name'))
+        .fold());
+    return traversal.toArray()
+      .then(extractObjectsFromPaths)
+      .then(function (actual) {
+        var expected = [
+          // The following nested array sends jshint into a tizzy, and yet I find it aesthetically pleasing.
+          /* jshint ignore:start */
+          [['lop'], ['ripple', 'lop'], ['josh']]
+          [['lop'], ['ripple', 'lop'], ['marko', 'josh', 'peter']]
+          /* jshint ignore:end */
+        ];
+        assert.deepEqual(actual, expected);
+      });
+  });
+
+  // Transform an array of arrays of vertices into an array of arrays of names.  Returns promise to array of arrays of
+  // names (strings).
+  function extractNamesFromPaths(vertexPathArray) {
+    return extractObjectsFromPaths(vertexPathArray)
+      .then(function (vertexObjectsArray) {
+        // Make sure we have an array of arrays of vertices, and extract the 'name' attribute from each.
+        assert(_.isArray(vertexObjectsArray));
+        var nameObjectsArray = vertexObjectsArray.map(function (vertexObjects) {
+          assert(_.isArray(vertexObjects), vertexObjects);
+          return vertexObjects.map(function (vertex) {
+            assert(vertex instanceof VertexWrapper, vertex);
+            return vertex.valueSync('name');
+          });
+        });
+        return nameObjectsArray;
+      });
+  }
+
+  test('repeat/times', function () {
+    var __ = gremlin.__;
+    // TODO: We would like to add by('name') on the end, but 3.0.0.M7 does not support this, so we use extractNamesFromPaths.
+    var traversal = g.V(1).repeat(__.out()).times(2).path();
+    return traversal.toArray()
+      .then(function (vertexPathArray) {
+        return extractNamesFromPaths(vertexPathArray);
+      })
+      .then(function (actual) {
+        var expected = [
+          ['marko', 'josh', 'ripple'],
+          ['marko', 'josh', 'lop'],
+        ];
+        assert.deepEqual(actual, expected);
+      });
+  });
+
+  test('repeat/until(Traversal)', function () {
+    var __ = gremlin.__;
+    // TODO: We would like to add by('name') on the end, but 3.0.0.M7 does not support this, so we use extractNamesFromPaths.
+    var traversal = g.V().until(__.has('name', 'ripple')).repeat(__.out()).path();
+    return traversal.toArray()
+      .then(function (vertexPathArray) {
+        return extractNamesFromPaths(vertexPathArray);
+      })
+      .then(function (actual) {
+        var expected = [
+          ['marko', 'josh', 'ripple'],
+          ['josh', 'ripple'],
+          ['ripple'],
+        ];
+        assert.deepEqual(actual, expected);
+      });
+  });
+
+  test('repeat/until(Predicate)', function () {
+    var __ = gremlin.__;
+    // TODO: We would like to add by('name') on the end, but 3.0.0.M7 does not support this, so we use extractNamesFromPaths.
+    var traversal = g.V().until('{ it -> it.get().value("name") == "ripple" }').repeat(__.out()).path();
+    return traversal.toArray()
+      .then(function (vertexPathArray) {
+        return extractNamesFromPaths(vertexPathArray);
+      })
+      .then(function (actual) {
+        var expected = [
+          ['marko', 'josh', 'ripple'],
+          ['josh', 'ripple'],
+          ['ripple'],
+        ];
+        assert.deepEqual(actual, expected);
+      });
   });
 
   test('sack and withSack with scalar', function (done) {

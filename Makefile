@@ -16,5 +16,5 @@ test: lint mvn-test mocha
 mvn-test:
 	mvn test
 
-mocha:
+mocha: lint
 	node_modules/mocha/bin/mocha --timeout 5s --reporter=spec --ui tdd
