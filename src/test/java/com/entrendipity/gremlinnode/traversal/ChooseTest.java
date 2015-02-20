@@ -54,9 +54,10 @@ public class ChooseTest {
             counter++;
         }
         assertFalse(traversal.hasNext());
-        assertEquals(7, counter);
-        assertEquals(7, counts.size());
-        assertEquals(Long.valueOf(1), counts.get("bar"));
+        assertEquals(8, counter);
+        assertEquals(8, counts.size());
+        assertEquals(Long.valueOf(1), counts.get("foo"));  // inject happens anyway
+        assertEquals(Long.valueOf(1), counts.get("bar"));  // only gets injected once
         assertEquals(Long.valueOf(1), counts.get("ripple"));
         assertEquals(Long.valueOf(1), counts.get("vadas"));
         assertEquals(Long.valueOf(1), counts.get("josh"));
