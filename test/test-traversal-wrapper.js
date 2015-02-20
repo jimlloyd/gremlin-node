@@ -618,20 +618,18 @@ suite('traversal-wrapper', function () {
       .done(done);
   });
 
-  test('choose(Function, Map) Java Map provided', function (done) {
+  test('choose(Function).option with integer choice', function (done) {
     var __ = gremlin.__;
 
     // Use the result of the function as a key to the map of traversal choices.
     var groovy = '{ vertex -> vertex.value("name").length() }';
 
-    // The choices are based on an integer value, so we cannot use a JS object as the map because it only has string
-    // keys.  Instead, we must construct a Java Map.
-    var choices = new gremlin.HashMap();
-    choices.putSync(5, __.in().unwrap());
-    choices.putSync(4, __.out().unwrap());
-    choices.putSync(3, __.both().unwrap());
+    var chosen = g.V().has('age').choose(groovy)
+        .option(5, __.in())
+        .option(4, __.out())
+        .option(3, __.both())
+        .values('name');
 
-    var chosen = g.V().has('age').choose(groovy, choices).values('name');
     chosen.toArray()
       .then(function (actual) {
         var expected = ['marko', 'ripple', 'lop'];
@@ -640,16 +638,20 @@ suite('traversal-wrapper', function () {
       .done(done);
   });
 
-  test('choose(Function, Map) JavaScript object provided', function (done) {
+  test('choose(Function).option with string choice', function (done) {
     var __ = gremlin.__;
 
     // Use the result of the function (which must be a string) as a key to the map of traversal choices.
     var groovy = '{ vertex -> vertex.value("name") }';
 
-    // The choices are based on a string value, so we can use a JS object as the map.
-    var choices = { marko: __.in(), josh: __.out(), lop: __.both(), vadas: __.in(), peter: __.in() };
+    var chosen = g.V().has('age').choose(groovy)
+        .option('marko', __.in())
+        .option('josh', __.out())
+        .option('lop', __.both())
+        .option('vadas', __.in())
+        .option('peter', __.in())
+        .values('name');
 
-    var chosen = g.V().has('age').choose(groovy, choices).values('name');
     chosen.toArray()
       .then(function (actual) {
         var expected = ['marko', 'ripple', 'lop'];
