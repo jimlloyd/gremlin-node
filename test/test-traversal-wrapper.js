@@ -54,18 +54,19 @@ suite('traversal-wrapper', function () {
       // This is an index of the GraphTraversal API we implement.
       // See http://www.tinkerpop.com/javadocs/3.0.0.M7/full/com/tinkerpop/gremlin/process/graph/GraphTraversal.html
       // This test will fail only if TinkerPop changes the api of 'com.tinkerpop.gremlin.process.graph.GraphTraversal'
-      'addBothE', 'addE', 'addInE', 'addOutE', 'addStart', 'addStarts', 'addStep', 'aggregate', 'applyStrategies',
-      'as', 'asAdmin', 'back', 'between', 'both', 'bothE', 'bothV', 'branch', 'by', 'cap', 'choose', 'clone', 'coin',
-      'count', 'cyclicPath', 'dedup', 'emit', 'equals', 'except', 'fill', 'filter', 'flatMap', 'fold',
-      'forEachRemaining', 'getClass', 'getSideEffects', 'getSteps', 'getStrategies', 'getTraversalEngine',
-      'getTraversalHolder', 'getTraverserGenerator', 'group', 'groupCount', 'has', 'hasNext', 'hasNot', 'hashCode',
-      'id', 'identity', 'in', 'inE', 'inV', 'inject', 'iterate', 'key', 'label', 'limit', 'local', 'map', 'match',
-      'next', 'notify', 'notifyAll', 'order', 'otherV', 'out', 'outE', 'outV', 'path', 'profile', 'properties',
-      'propertyMap', 'range', 'remove', 'removeStep', 'repeat', 'reset', 'retain', 'reverse', 'sack', 'sample',
-      'select', 'setSideEffects', 'setStrategies', 'setTraversalHolder', 'shuffle', 'sideEffect', 'simplePath',
-      'store', 'subgraph', 'submit', 'sum', 'timeLimit', 'times', 'to', 'toBulkSet', 'toE', 'toList', 'toSet',
-      'toString', 'toV', 'tree', 'tryNext', 'unfold', 'union', 'until', 'value', 'valueMap', 'values', 'wait', 'where',
-      'withPath', 'withSack', 'withSideEffect'
+      'addBothE', 'addE', 'addInE', 'addOutE', 'addStart', 'addStarts', 'addStep', 'aggregate', 'and',
+      'applyStrategies', 'as', 'asAdmin', 'back', 'barrier', 'both', 'bothE', 'bothV', 'branch', 'by', 'cap', 'choose',
+      'clone', 'coalesce', 'coin', 'count', 'cyclicPath', 'dedup', 'emit', 'equals', 'except', 'fill', 'filter',
+      'flatMap', 'fold', 'forEachRemaining', 'getClass', 'getEndStep', 'getEngine', 'getParent', 'getSideEffects',
+      'getStartStep', 'getSteps', 'getStrategies', 'getTraverserGenerator', 'getTraverserRequirements', 'group',
+      'groupCount', 'has', 'hasId', 'hasKey', 'hasLabel', 'hasNext', 'hasNot', 'hasValue', 'hashCode', 'id', 'identity',
+      'in', 'inE', 'inV', 'inject', 'is', 'iterate', 'key', 'label', 'limit', 'local', 'map', 'match', 'max', 'mean',
+      'min', 'next', 'notify', 'notifyAll', 'option', 'or', 'order', 'otherV', 'out', 'outE', 'outV', 'path', 'profile',
+      'properties', 'propertyMap', 'range', 'remove', 'removeStep', 'repeat', 'reset', 'retain', 'reverse', 'sack',
+      'sample', 'select', 'setParent', 'setSideEffects', 'setStrategies', 'sideEffect', 'simplePath', 'store',
+      'subgraph', 'submit', 'sum', 'timeLimit', 'times', 'to', 'toBulkSet', 'toE', 'toList', 'toSet', 'toString',
+      'toV', 'tree', 'tryNext', 'unfold', 'union', 'until', 'value', 'valueMap', 'values', 'wait', 'where', 'withPath',
+      'withSack', 'withSideEffect'
     ];
     var javaTraversal = g.V().unwrap();
     assert.ok(gremlin.isType(javaTraversal, 'com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal'));
