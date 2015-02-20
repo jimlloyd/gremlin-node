@@ -68,7 +68,7 @@ suite('traversal-wrapper', function () {
       'withPath', 'withSack', 'withSideEffect'
     ];
     var javaTraversal = g.V().unwrap();
-    assert.ok(gremlin.isType(javaTraversal, 'com.tinkerpop.gremlin.process.graph.GraphTraversal'));
+    assert.ok(gremlin.isType(javaTraversal, 'com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal'));
     var methods = _.functions(javaTraversal);
     var asyncMethods = _.filter(methods, function (method) { return !method.match(/Sync$/); }).sort();
     var syncMethods = _.filter(methods, function (method) { return method.match(/Sync$/); });
