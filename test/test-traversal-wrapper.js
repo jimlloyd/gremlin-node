@@ -93,7 +93,7 @@ suite('traversal-wrapper', function () {
 
         // If we try to extend the original traversal again, it's an error
         assert.throws(function () { original.has('age'); },
-                      /IllegalStateException:.*traversal can no longer have steps added/);
+                      /IllegalStateException:.*traversal can no longer be modulated/);
 
         // We should be able to extend and execute the clone.
         return clone.has('age').toArray();
