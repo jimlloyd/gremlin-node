@@ -3,6 +3,7 @@ package com.entrendipity.gremlinnode.traversal;
 import com.entrendipity.gremlinnode.function.GroovyLambda;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.script.ScriptException;
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
