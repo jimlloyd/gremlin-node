@@ -101,16 +101,13 @@ public class ChooseTest {
      */
     @Test
     public void simpleChooseFunctionWorks() {
-        HashMap choices = new HashMap() {{
-            put(5, __.in());
-            put(4, __.out());
-            put(3, __.both());
-        }};
-
         final Traversal<Vertex, String> traversal =
             graph.V()
             .has("age")
-            .choose(v -> v.<String>value("name").length(), choices)
+            .choose(v -> v.<String>value("name").length())
+            .option(5, __.in())
+            .option(4, __.out())
+            .option(3, __.both())
             .values("name");
 
         Map<String, Long> counts = new HashMap<>();
@@ -133,12 +130,6 @@ public class ChooseTest {
      */
     @Test
     public void groovyChooseFunctionWorks() {
-        HashMap choices = new HashMap() {{
-            put(5, __.in());
-            put(4, __.out());
-            put(3, __.both());
-        }};
-
         GroovyLambda lambda;
         try {
             lambda = new GroovyLambda("{ vertex -> vertex.value('name').length() }");
@@ -151,7 +142,10 @@ public class ChooseTest {
         final Traversal<Vertex, String> traversal =
             graph.V()
             .has("age")
-            .choose(lambda, choices)
+            .choose(lambda)
+            .option(5, __.in())
+            .option(4, __.out())
+            .option(3, __.both())
             .values("name");
 
         Map<String, Long> counts = new HashMap<>();
