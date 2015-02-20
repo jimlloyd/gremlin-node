@@ -1181,21 +1181,20 @@ suite('traversal-wrapper', function () {
     .done(done);
   });
 
-  test('subgraph() with Groovy closure', function (done) {
-    g.E().subgraph('{ it -> it.label() == "knows" }')
+  test('subgraph()', function (done) {
+    g.E().has(gremlin.T.label, 'knows').subgraph().next()
       .then(function (sg) {
-        assert.ok(sg instanceof GraphWrapper);
+        assert.ok(sg instanceof GraphWrapper, typeof sg);
         assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
       })
       .done(done);
   });
 
-  test('subgraph() with JavaScript lambda', function (done) {
-    var lambda = gremlin.newJavaScriptLambda('a.label() === "knows"');
-    g.E().subgraph(lambda)
+  test('subgraph(sideEffectKey)', function (done) {
+    g.V(3).repeat(gremlin.__.inE().subgraph('sg').outV()).times(3).cap('sg').next()
       .then(function (sg) {
         assert.ok(sg instanceof GraphWrapper);
-        assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
+        assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:4 edges:4]');
       })
       .done(done);
   });
