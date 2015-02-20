@@ -3,6 +3,7 @@ package com.entrendipity.gremlinnode.traversal;
 import com.entrendipity.gremlinnode.function.GroovyLambda;
 import com.tinkerpop.gremlin.process.T;
 import com.tinkerpop.gremlin.process.Traversal;
+import com.tinkerpop.gremlin.process.graph.traversal.__;
 import com.tinkerpop.gremlin.process.util.MapHelper;
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Vertex;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.script.ScriptException;
 
-import static com.tinkerpop.gremlin.process.graph.AnonymousGraphTraversal.Tokens.__;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -54,9 +54,10 @@ public class ChooseTest {
             counter++;
         }
         assertFalse(traversal.hasNext());
-        assertEquals(7, counter);
-        assertEquals(7, counts.size());
-        assertEquals(Long.valueOf(1), counts.get("bar"));
+        assertEquals(8, counter);
+        assertEquals(8, counts.size());
+        assertEquals(Long.valueOf(1), counts.get("foo"));  // inject happens anyway
+        assertEquals(Long.valueOf(1), counts.get("bar"));  // only gets injected once
         assertEquals(Long.valueOf(1), counts.get("ripple"));
         assertEquals(Long.valueOf(1), counts.get("vadas"));
         assertEquals(Long.valueOf(1), counts.get("josh"));
@@ -100,16 +101,13 @@ public class ChooseTest {
      */
     @Test
     public void simpleChooseFunctionWorks() {
-        HashMap choices = new HashMap() {{
-            put(5, __.in());
-            put(4, __.out());
-            put(3, __.both());
-        }};
-
         final Traversal<Vertex, String> traversal =
             graph.V()
             .has("age")
-            .choose(v -> v.<String>value("name").length(), choices)
+            .choose(v -> v.<String>value("name").length())
+            .option(5, __.in())
+            .option(4, __.out())
+            .option(3, __.both())
             .values("name");
 
         Map<String, Long> counts = new HashMap<>();
@@ -132,12 +130,6 @@ public class ChooseTest {
      */
     @Test
     public void groovyChooseFunctionWorks() {
-        HashMap choices = new HashMap() {{
-            put(5, __.in());
-            put(4, __.out());
-            put(3, __.both());
-        }};
-
         GroovyLambda lambda;
         try {
             lambda = new GroovyLambda("{ vertex -> vertex.value('name').length() }");
@@ -150,7 +142,10 @@ public class ChooseTest {
         final Traversal<Vertex, String> traversal =
             graph.V()
             .has("age")
-            .choose(lambda, choices)
+            .choose(lambda)
+            .option(5, __.in())
+            .option(4, __.out())
+            .option(3, __.both())
             .values("name");
 
         Map<String, Long> counts = new HashMap<>();

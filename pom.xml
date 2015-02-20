@@ -11,7 +11,7 @@
 
   <properties>
     <junit.version>4.11</junit.version>
-    <gremlin.version>3.0.0.M7</gremlin.version>
+    <gremlin.version>3.0.0-SNAPSHOT</gremlin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 

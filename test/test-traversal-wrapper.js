@@ -54,21 +54,22 @@ suite('traversal-wrapper', function () {
       // This is an index of the GraphTraversal API we implement.
       // See http://www.tinkerpop.com/javadocs/3.0.0.M7/full/com/tinkerpop/gremlin/process/graph/GraphTraversal.html
       // This test will fail only if TinkerPop changes the api of 'com.tinkerpop.gremlin.process.graph.GraphTraversal'
-      'addBothE', 'addE', 'addInE', 'addOutE', 'addStart', 'addStarts', 'addStep', 'aggregate', 'applyStrategies',
-      'as', 'asAdmin', 'back', 'between', 'both', 'bothE', 'bothV', 'branch', 'by', 'cap', 'choose', 'clone', 'coin',
-      'count', 'cyclicPath', 'dedup', 'emit', 'equals', 'except', 'fill', 'filter', 'flatMap', 'fold',
-      'forEachRemaining', 'getClass', 'getSideEffects', 'getSteps', 'getStrategies', 'getTraversalEngine',
-      'getTraversalHolder', 'getTraverserGenerator', 'group', 'groupCount', 'has', 'hasNext', 'hasNot', 'hashCode',
-      'id', 'identity', 'in', 'inE', 'inV', 'inject', 'iterate', 'key', 'label', 'limit', 'local', 'map', 'match',
-      'next', 'notify', 'notifyAll', 'order', 'otherV', 'out', 'outE', 'outV', 'path', 'profile', 'properties',
-      'propertyMap', 'range', 'remove', 'removeStep', 'repeat', 'reset', 'retain', 'reverse', 'sack', 'sample',
-      'select', 'setSideEffects', 'setStrategies', 'setTraversalHolder', 'shuffle', 'sideEffect', 'simplePath',
-      'store', 'subgraph', 'submit', 'sum', 'timeLimit', 'times', 'to', 'toBulkSet', 'toE', 'toList', 'toSet',
-      'toString', 'toV', 'tree', 'tryNext', 'unfold', 'union', 'until', 'value', 'valueMap', 'values', 'wait', 'where',
-      'withPath', 'withSack', 'withSideEffect'
+      'addBothE', 'addE', 'addInE', 'addOutE', 'addStart', 'addStarts', 'addStep', 'aggregate', 'and',
+      'applyStrategies', 'as', 'asAdmin', 'back', 'barrier', 'both', 'bothE', 'bothV', 'branch', 'by', 'cap', 'choose',
+      'clone', 'coalesce', 'coin', 'count', 'cyclicPath', 'dedup', 'emit', 'equals', 'except', 'fill', 'filter',
+      'flatMap', 'fold', 'forEachRemaining', 'getClass', 'getEndStep', 'getEngine', 'getParent', 'getSideEffects',
+      'getStartStep', 'getSteps', 'getStrategies', 'getTraverserGenerator', 'getTraverserRequirements', 'group',
+      'groupCount', 'has', 'hasId', 'hasKey', 'hasLabel', 'hasNext', 'hasNot', 'hasValue', 'hashCode', 'id', 'identity',
+      'in', 'inE', 'inV', 'inject', 'is', 'iterate', 'key', 'label', 'limit', 'local', 'map', 'match', 'max', 'mean',
+      'min', 'next', 'notify', 'notifyAll', 'option', 'or', 'order', 'otherV', 'out', 'outE', 'outV', 'path', 'profile',
+      'properties', 'propertyMap', 'range', 'remove', 'removeStep', 'repeat', 'reset', 'retain', 'reverse', 'sack',
+      'sample', 'select', 'setParent', 'setSideEffects', 'setStrategies', 'sideEffect', 'simplePath', 'store',
+      'subgraph', 'submit', 'sum', 'timeLimit', 'times', 'to', 'toBulkSet', 'toE', 'toList', 'toSet', 'toString',
+      'toV', 'tree', 'tryNext', 'unfold', 'union', 'until', 'value', 'valueMap', 'values', 'wait', 'where', 'withPath',
+      'withSack', 'withSideEffect'
     ];
     var javaTraversal = g.V().unwrap();
-    assert.ok(gremlin.isType(javaTraversal, 'com.tinkerpop.gremlin.process.graph.GraphTraversal'));
+    assert.ok(gremlin.isType(javaTraversal, 'com.tinkerpop.gremlin.process.graph.traversal.GraphTraversal'));
     var methods = _.functions(javaTraversal);
     var asyncMethods = _.filter(methods, function (method) { return !method.match(/Sync$/); }).sort();
     var syncMethods = _.filter(methods, function (method) { return method.match(/Sync$/); });
@@ -92,7 +93,7 @@ suite('traversal-wrapper', function () {
 
         // If we try to extend the original traversal again, it's an error
         assert.throws(function () { original.has('age'); },
-                      /IllegalStateException:.*traversal can no longer have steps added/);
+                      /IllegalStateException:.*traversal can no longer be modulated/);
 
         // We should be able to extend and execute the clone.
         return clone.has('age').toArray();
@@ -473,26 +474,6 @@ suite('traversal-wrapper', function () {
   //   });
   // });
 
-  test('between(string key, object start, object end)', function (done) {
-    var lower = 0.3;
-    var upper = 0.9;
-
-    var traversal = g.E().between('weight', java.newFloat(lower), java.newFloat(upper));
-    traversal.toArray()
-      .then(function (a) {
-        assert(_.isArray(a));
-        assert.strictEqual(a.length, 3);
-        var p = a.map(function (e) { return e.value('weight'); });
-        return Q.all(p);
-      })
-      .then(function (weights) {
-        weights.map(function (w) {
-          assert(w >= lower && w <= upper);
-        });
-      })
-      .done(done);
-  });
-
   test('bothE(string... labels)', function (done) {
     g.V().bothE('knows', 'created').toArray(function (err, edges) {
       assert.ifError(err);
@@ -637,20 +618,18 @@ suite('traversal-wrapper', function () {
       .done(done);
   });
 
-  test('choose(Function, Map) Java Map provided', function (done) {
+  test('choose(Function).option with integer choice', function (done) {
     var __ = gremlin.__;
 
     // Use the result of the function as a key to the map of traversal choices.
     var groovy = '{ vertex -> vertex.value("name").length() }';
 
-    // The choices are based on an integer value, so we cannot use a JS object as the map because it only has string
-    // keys.  Instead, we must construct a Java Map.
-    var choices = new gremlin.HashMap();
-    choices.putSync(5, __.in().unwrap());
-    choices.putSync(4, __.out().unwrap());
-    choices.putSync(3, __.both().unwrap());
+    var chosen = g.V().has('age').choose(groovy)
+        .option(5, __.in())
+        .option(4, __.out())
+        .option(3, __.both())
+        .values('name');
 
-    var chosen = g.V().has('age').choose(groovy, choices).values('name');
     chosen.toArray()
       .then(function (actual) {
         var expected = ['marko', 'ripple', 'lop'];
@@ -659,16 +638,20 @@ suite('traversal-wrapper', function () {
       .done(done);
   });
 
-  test('choose(Function, Map) JavaScript object provided', function (done) {
+  test('choose(Function).option with string choice', function (done) {
     var __ = gremlin.__;
 
     // Use the result of the function (which must be a string) as a key to the map of traversal choices.
     var groovy = '{ vertex -> vertex.value("name") }';
 
-    // The choices are based on a string value, so we can use a JS object as the map.
-    var choices = { marko: __.in(), josh: __.out(), lop: __.both(), vadas: __.in(), peter: __.in() };
+    var chosen = g.V().has('age').choose(groovy)
+        .option('marko', __.in())
+        .option('josh', __.out())
+        .option('lop', __.both())
+        .option('vadas', __.in())
+        .option('peter', __.in())
+        .values('name');
 
-    var chosen = g.V().has('age').choose(groovy, choices).values('name');
     chosen.toArray()
       .then(function (actual) {
         var expected = ['marko', 'ripple', 'lop'];
@@ -1198,21 +1181,20 @@ suite('traversal-wrapper', function () {
     .done(done);
   });
 
-  test('subgraph() with Groovy closure', function (done) {
-    g.E().subgraph('{ it -> it.label() == "knows" }')
+  test('subgraph()', function (done) {
+    g.E().has(gremlin.T.label, 'knows').subgraph().next()
       .then(function (sg) {
-        assert.ok(sg instanceof GraphWrapper);
+        assert.ok(sg instanceof GraphWrapper, typeof sg);
         assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
       })
       .done(done);
   });
 
-  test('subgraph() with JavaScript lambda', function (done) {
-    var lambda = gremlin.newJavaScriptLambda('a.label() === "knows"');
-    g.E().subgraph(lambda)
+  test('subgraph(sideEffectKey)', function (done) {
+    g.V(3).repeat(gremlin.__.inE().subgraph('sg').outV()).times(3).cap('sg').next()
       .then(function (sg) {
         assert.ok(sg instanceof GraphWrapper);
-        assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:3 edges:2]');
+        assert.strictEqual(sg.toStringSync(), 'tinkergraph[vertices:4 edges:4]');
       })
       .done(done);
   });
