@@ -474,26 +474,6 @@ suite('traversal-wrapper', function () {
   //   });
   // });
 
-  test('between(string key, object start, object end)', function (done) {
-    var lower = 0.3;
-    var upper = 0.9;
-
-    var traversal = g.E().between('weight', java.newFloat(lower), java.newFloat(upper));
-    traversal.toArray()
-      .then(function (a) {
-        assert(_.isArray(a));
-        assert.strictEqual(a.length, 3);
-        var p = a.map(function (e) { return e.value('weight'); });
-        return Q.all(p);
-      })
-      .then(function (weights) {
-        weights.map(function (w) {
-          assert(w >= lower && w <= upper);
-        });
-      })
-      .done(done);
-  });
-
   test('bothE(string... labels)', function (done) {
     g.V().bothE('knows', 'created').toArray(function (err, edges) {
       assert.ifError(err);
