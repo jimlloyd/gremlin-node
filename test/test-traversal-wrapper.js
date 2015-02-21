@@ -660,6 +660,23 @@ suite('traversal-wrapper', function () {
       .done(done);
   });
 
+  test('coalesce', function () {
+    // Add a nickname to 'marko'
+    return g.V(1).next()
+      .then(function (vertex) {
+        return vertex.setProperty('nickname', 'okram');
+      })
+      .then(function () {
+        var __ = gremlin.__;
+        var traversal = g.V().has('age').coalesce(__.values('nickname'), __.values('name'));
+        return traversal.toArray();
+      })
+      .then(function (actual) {
+        var expected = [ 'okram', 'vadas', 'josh', 'peter' ];
+        assert.deepEqual(actual, expected);
+      });
+  });
+
   // TODO
   // TraversalWrapper.prototype.idEdge = function () {
   // TraversalWrapper.prototype.id = function () {
